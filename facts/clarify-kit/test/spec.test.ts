@@ -10,9 +10,9 @@ const index = JSON.parse(
   readFileSync(new URL('../dist/clarify-kit/index.json', import.meta.url), 'utf8'),
 ) as FactIndex
 
-const labels = ['doc-model', 'build-check', 'pin-read-impact-render']
+const labels = ['build-check', 'pin-read-impact-render']
 const all = new Map(
-  selectFacts(index, { version: 'head', include: ['doc-model', 'build-check', 'pin-read-impact-render'] }).map((f) => [f.id, f]),
+  selectFacts(index, { version: 'head', include: ['build-check', 'pin-read-impact-render'] }).map((f) => [f.id, f]),
 )
 const value = (id: string): any => {
   const f = all.get(`clarify-kit.${id}`)
@@ -21,9 +21,11 @@ const value = (id: string): any => {
 }
 
 describe('pending rows', () => {
-  it('are hidden from a reader that includes no label', () => {
+  it('are hidden from a reader that includes no label, which still reads the rows that carry none', () => {
     const plain = selectFacts(index, { version: 'head' })
-    assert.equal(plain.length, 0)
+    assert.ok(plain.length > 0)
+    for (const f of plain) assert.ok(index.facts.find((x) => x.id === f.id)?.variants?.every((v) => v.pending === undefined), f.id)
+    assert.ok(plain.length < index.facts.length)
   })
   it('are visible once per label', () => {
     for (const label of labels) {
@@ -31,18 +33,26 @@ describe('pending rows', () => {
       assert.ok(some.length > 0, label)
     }
   })
-  it('all start at next and carry one of the three labels', () => {
+  it('all start at next, and carry one of the two labels unless the code they describe is already there', () => {
     for (const fact of index.facts) {
       assert.ok(fact.variants && fact.variants.length > 0, fact.id)
       for (const v of fact.variants) {
         assert.equal(v.since, 'next', fact.id)
-        assert.ok(labels.includes(v.pending ?? ''), `${fact.id}: ${v.pending}`)
+        assert.ok(v.pending === undefined || labels.includes(v.pending), `${fact.id}: ${v.pending}`)
+      }
+    }
+  })
+  it('are left on no fact of the document model, which the package implements', () => {
+    for (const fact of index.facts) {
+      const topic = fact.id.split('.')[1]
+      if (['doc-types', 'blocks', 'topics', 'templates', 'modules'].includes(topic ?? '')) {
+        assert.ok(fact.variants?.every((v) => v.pending === undefined), fact.id)
       }
     }
   })
 })
 
-describe('doc types (doc-model)', () => {
+describe('doc types', () => {
   it('have four kinds with their states and version fields', () => {
     const doc = value('doc-types.doc')
     const req = value('doc-types.requirement')
@@ -72,7 +82,7 @@ describe('doc types (doc-model)', () => {
   })
 })
 
-describe('blocks, topics, templates and modules (doc-model)', () => {
+describe('blocks, topics, templates and modules', () => {
   it('have seven blocks, each with since and pending', () => {
     const kinds = value('blocks.kinds').kinds
     assert.deepEqual(kinds, ['text', 'list', 'table', 'fact', 'scenario', 'code', 'asset'])
