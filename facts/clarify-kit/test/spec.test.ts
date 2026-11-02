@@ -195,7 +195,7 @@ describe('CLI, config, entry rule, index format and check codes', () => {
     ])
   })
   it('read facts through fact-kit', () => {
-    assert.match(value('check.fact-lookup').rule, /readFacts.*selectFacts/)
+    assert.match(value('check.fact-lookup').rule, /loadInstalledIndex.*selectFacts/)
   })
 })
 

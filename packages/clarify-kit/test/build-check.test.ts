@@ -328,6 +328,7 @@ describe('the facts a document cites are read through fact-kit', () => {
 
   for (const [fixture, source, ids] of [
     ['facts-1x', 'acme-facts-1x/acme', ['acme.tokens.color-primary', 'acme.tokens.spacing']],
+    ['facts-1x2', 'acme-facts-1x2/acme', ['acme.layout.gutter', 'acme.layout.columns']],
     ['facts-2x', 'acme-facts-2x/acme', ['acme.buttons.radius', 'acme.buttons.shadow']],
   ] as const) {
     it(`passes a document that cites facts of the ${fixture} index, and reports one they do not have`, async () => {
@@ -339,10 +340,14 @@ describe('the facts a document cites are read through fact-kit', () => {
     })
   }
 
-  it('reads both index formats in one project', async () => {
-    const p = new Project('facts-both').config({ factSources: ['acme-facts-1x/acme', 'acme-facts-2x/acme'] }).entry().install('facts-1x').install('facts-2x')
-    p.doc('docs/main/c.doc.ts', 'doc, section, factBlock', `doc({ id: 'c', title: 'C', status: 'draft', sections: [section('s', 'S', [factBlock({ facts: ['acme.tokens.spacing', 'acme.buttons.shadow'] })])] })`)
+  it('reads all three index formats in one project', async () => {
+    const p = new Project('facts-both')
+      .config({ factSources: ['acme-facts-1x/acme', 'acme-facts-1x2/acme', 'acme-facts-2x/acme'] })
+      .entry().install('facts-1x').install('facts-1x2').install('facts-2x')
+    p.doc('docs/main/c.doc.ts', 'doc, section, factBlock', `doc({ id: 'c', title: 'C', status: 'draft', sections: [section('s', 'S', [factBlock({ facts: ['acme.tokens.spacing', 'acme.layout.gutter', 'acme.buttons.shadow'] })])] })`)
     expect(await check(p)).toEqual([])
+    p.doc('docs/main/c.doc.ts', 'doc, section, factBlock', cites('acme.other.thing'))
+    expect(codes(await check(p))).toEqual(['unknown-fact-reference'])
   })
 
   it('stops with an input error when a facts package is not installed', async () => {

@@ -31,7 +31,7 @@ export default [
   f.value(
     'fact-lookup',
     history({ since: 'next', value: {
-      rule: '檢查 fact 引用時，用 fact-kit 的 `readFacts` 或 `selectFacts` 讀 fact，不自己解析 `index.json`',
+      rule: '檢查 fact 引用時，用 fact-kit 的 `loadInstalledIndex` 讀已安裝的 index，再用 `selectFacts` 選 fact，不自己解析 `index.json`',
       why: 'fact 的版本與 pending 選取規則只在 fact-kit 一處實作',
     } }),
     { title: 'check 讀 fact 的方式', description: '引用檢查透過 fact-kit 的讀取 API 找 fact。' },

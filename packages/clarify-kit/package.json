@@ -1,7 +1,7 @@
 {
   "name": "clarify-kit",
   "version": "0.0.0",
-  "description": "Turns a discussion into the documents that settle it. Skeleton: the implementation comes in later tasks.",
+  "description": "Turns a discussion into documents that settle it: build the documents, check them against the facts they cite, and adopt decisions and records.",
   "license": "MIT",
   "type": "module",
   "repository": {
