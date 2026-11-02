@@ -73,9 +73,9 @@ export default [
     'render-location',
     history({ since: 'next', value: {
       default: '系統暫存目錄（`os.tmpdir()`）底下的新目錄',
-      outInsideWorkTree: '`--out` 指到 git 工作樹內時拒絕渲染，印出原因，結束碼非 0（1）',
+      outInsideWorkTree: '`--out` 指到 git 工作樹或 `.git/` 內時拒絕渲染，印出原因，結束碼非 0（1）',
       why: '渲染產物不進版控，源碼是唯一的真相',
-      detect: '用 `git rev-parse --is-inside-work-tree` 在輸出目錄判斷，目錄還不存在時在最近的上層目錄判斷',
+      detect: '找出 `--out` 最近存在的上層目錄並做 `realpath`（處理符號連結），在那裡跑 `git rev-parse --absolute-git-dir` 與 `--show-toplevel`；輸出路徑落在工作樹根目錄或 git 目錄（`.git/`）底下就拒絕。git 回非 0（不在任何倉庫）就放行；找不到 git 執行檔時拒絕 `--out`（結束碼 1），預設的暫存目錄照常放行；符號連結無法解析時結束碼 2',
     } }),
     { title: 'render 只輸出到 git 工作樹外', description: '渲染位置預設在系統暫存目錄，`--out` 在 git 工作樹內時拒絕。' },
   ),

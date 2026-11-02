@@ -3,9 +3,9 @@
 // A fact block calls the renderer the module registered under its `renderer` name, and a fact block without one gets the
 // plain rendering of `defaultFactMarkdown`.
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { lstatSync, mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve, sep } from 'node:path'
 import { loadInstalledIndex, selectFacts } from 'fact-kit'
 import type { SelectedFact } from 'fact-kit'
 import type { Block } from './blocks.ts'
@@ -34,15 +34,61 @@ export interface RenderResult {
   written: string[]
 }
 
-/** Whether `dir`, or the closest directory above it that exists, is inside a git work tree. A place git can not be asked about is outside. */
-export function insideWorkTree(dir: string): boolean {
-  let current = resolve(dir)
-  while (!existsSync(current) && dirname(current) !== current) current = dirname(current)
+/** Runs git in `cwd` and returns the trimmed stdout, `undefined` when git exits non-zero, and throws when git can not be started. */
+function git(cwd: string, args: string[]): string | undefined {
   try {
-    return execFileSync('git', ['-C', current, 'rev-parse', '--is-inside-work-tree'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() === 'true'
-  } catch {
-    return false
+    return execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw error
+    return undefined
   }
+}
+
+const under = (path: string, root: string): boolean => path === root || path.startsWith(root.endsWith(sep) ? root : root + sep)
+
+/**
+ * The reason `dir` can not take rendered files, or `undefined` when it can. `dir` is resolved through symbolic links at the
+ * closest ancestor that exists, then compared with the work tree root and the git directory of the repository there, so a
+ * path under `.git/` or behind a link into the repository is refused as well. A place outside every repository is allowed.
+ * When git can not be started, `whenGitMissing` decides: `'refuse'` for a place the user chose, `'allow'` for the tool's own.
+ * Throws {@link InputError} when a link on the way can not be resolved.
+ */
+export function outputRefusal(dir: string, whenGitMissing: 'refuse' | 'allow' = 'refuse'): string | undefined {
+  const target = resolve(dir)
+  const rest: string[] = []
+  let current = target
+  for (;;) {
+    try {
+      lstatSync(current)
+      break
+    } catch {
+      const parent = dirname(current)
+      if (parent === current) break
+      rest.unshift(basename(current))
+      current = parent
+    }
+  }
+  let real: string
+  try {
+    real = realpathSync(current)
+  } catch (error) {
+    throw new InputError(`cannot resolve the output location ${target}: ${current} is a link or path that can not be followed (${(error as NodeJS.ErrnoException).code ?? 'error'})`)
+  }
+  const path = join(real, ...rest)
+  let gitDir: string | undefined
+  let topLevel: string | undefined
+  try {
+    gitDir = git(real, ['rev-parse', '--absolute-git-dir'])
+    // Inside the git directory there is no work tree and this fails, the git directory check below covers that place.
+    topLevel = gitDir === undefined ? undefined : git(real, ['rev-parse', '--show-toplevel'])
+  } catch {
+    return whenGitMissing === 'allow' ? undefined : `${target} can not be checked because git is not available, so it is not known whether it is inside a repository`
+  }
+  if (gitDir === undefined) return undefined
+  const roots = [topLevel, gitDir].filter((r): r is string => r !== undefined && r !== '').map((r) => realpathSync(r))
+  const hit = roots.find((root) => under(path, root))
+  if (hit === undefined) return undefined
+  return `${target} is inside a git work tree or git directory (${hit})`
 }
 
 const cell = (text: string): string => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
@@ -135,8 +181,9 @@ function selectedFacts(config: Config, reader: { version: string; include: reado
  */
 export async function renderProject(config: Config, options: RenderOptions = {}): Promise<RenderResult> {
   const out = options.out === undefined ? mkdtempSync(join(tmpdir(), 'clarify-kit-render-')) : resolve(options.out)
-  if (insideWorkTree(out)) {
-    throw new RefusedError(`${out} is inside a git work tree. Rendered files are not part of the repository, so choose a directory outside it, or leave out --out for a new directory under ${tmpdir()}`)
+  const refusal = outputRefusal(out, options.out === undefined ? 'allow' : 'refuse')
+  if (refusal !== undefined) {
+    throw new RefusedError(`${refusal}. Rendered files are not part of the repository, so choose a directory outside it, or leave out --out for a new directory under ${tmpdir()}`)
   }
   const project = await loadProject(config)
   const failed = project.problems.filter((p) => p.code === 'load-error')

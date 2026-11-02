@@ -49,7 +49,7 @@ export default decision({
 | `clarify-kit build [--config <file>]` | 把每個 entry 編譯成專案目錄下的 `dist/<entry>/index.json`。有檔案載入失敗時不寫任何檔案 | 0 成功，1 載入失敗，2 讀不到輸入 |
 | `clarify-kit check [--config <file>] [--json]` | 檢查文件並回報問題，每筆問題有穩定的 `code`、`message` 與 `location` | 0 沒有問題，1 有問題，2 讀不到輸入 |
 | `clarify-kit pin --version <v> [--config <file>]` | 把 `docsDir` 底下 `*.doc.ts` 裡文件、段落與區塊的 `since: 'next'` 換成 `<v>`。帶 `pending` 的不動，功能落地時先拿掉 `pending`，下一次 pin 才釘版號 | 0 成功，2 沒給 `--version`、版號不是 semver 或讀不到輸入 |
-| `clarify-kit render [--out <dir>] [--version <v>] [--include <label>...] [--config <file>]` | 把文件渲染成 Markdown，每份文件一個檔 `<out>/<entry>/<文件 id>.md`。預設寫到 `os.tmpdir()` 底下的新目錄，`--out` 在 git 工作樹內時拒絕。fact 渲染區塊呼叫模組用 `registerRenderer` 登記的函式，收到 `{ version, include, document, section }` | 0 成功，1 `--out` 在 git 工作樹內，2 讀不到輸入、找不到渲染函式或 fact |
+| `clarify-kit render [--out <dir>] [--version <v>] [--include <label>...] [--config <file>]` | 把文件渲染成 Markdown，每份文件一個檔 `<out>/<entry>/<文件 id>.md`。預設寫到 `os.tmpdir()` 底下的新目錄，`--out` 在 git 工作樹或 `.git/` 內時拒絕（先解析符號連結再比對 git 根目錄），找不到 git 時也拒絕 `--out`。fact 渲染區塊呼叫模組用 `registerRenderer` 登記的函式，收到 `{ version, include, document, section }` | 0 成功，1 `--out` 在 git 工作樹或 `.git/` 內、或無法確認位置，2 讀不到輸入、`--out` 的符號連結無法解析、找不到渲染函式或 fact |
 | `clarify-kit adopt <file> [--config <file>]` | decision 改成已採納並寫入內文雜湊，record 只寫入內文雜湊。重跑會更新雜湊 | 0 成功，1 檔案不是 decision 或 record，2 讀不到檔案 |
 
 ## 讀取與影響分析

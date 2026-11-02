@@ -1,6 +1,6 @@
 // Tests of pin, read, impact, render and merge-since on documents, and the hash that leaves out `pending`.
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { impactOf, mergeSince } from 'fact-kit'
@@ -421,6 +421,59 @@ registerRenderer('render-test', (fact, context) => 'RENDERED ' + fact.id + ' ' +
     expect(cli(p, 'render', '--out', join(REPO, 'new-dir', 'deeper')).status).toBe(1)
     expect(existsSync(join(REPO, 'new-dir'))).toBe(false)
     expect(gitStatus()).toBe(before)
+  })
+
+  it('refuses --out under the git directory, creates nothing there and exits 1', () => {
+    const p = make('render-gitdir')
+    const gitDir = join(REPO, '.git')
+    const before = readdirSync(gitDir).sort()
+    const r = cli(p, 'render', '--out', join(gitDir, 'clarify-render-guard', 'deeper'))
+    expect(r.status).toBe(1)
+    expect(r.err).toMatch(/git directory/)
+    expect(cli(p, 'render', '--out', gitDir).status).toBe(1)
+    expect(readdirSync(gitDir).sort()).toEqual(before)
+  })
+
+  it('exits 2 with a clear message for a --out that is a dangling symbolic link', () => {
+    const p = make('render-dangling')
+    const holder = outside()
+    try {
+      const link = join(holder, 'link')
+      symlinkSync(join(holder, 'missing'), link)
+      const r = cli(p, 'render', '--out', link)
+      expect(r.status).toBe(2)
+      expect(r.err).toContain('cannot resolve the output location')
+      expect(r.err).not.toContain('unexpected error')
+      const deeper = cli(p, 'render', '--out', join(link, 'sub'))
+      expect(deeper.status).toBe(2)
+      expect(deeper.err).not.toContain('unexpected error')
+    } finally {
+      rmSync(holder, { recursive: true, force: true })
+    }
+  })
+
+  it('refuses --out when git can not be found, and still renders to the default location', () => {
+    const p = make('render-no-git')
+    const noGit = outside()
+    const out = outside()
+    const env = { ...process.env, PATH: noGit }
+    const run2 = (...args: string[]) => {
+      const r = spawnSync(process.execPath, [CLI, ...args], { cwd: p.dir, encoding: 'utf8', env })
+      return { status: r.status, out: r.stdout, err: r.stderr }
+    }
+    try {
+      const refused = run2('render', '--out', join(out, 'x'))
+      expect(refused.status).toBe(1)
+      expect(refused.err).toMatch(/git is not available/)
+      expect(existsSync(join(out, 'x'))).toBe(false)
+      const ok = run2('render')
+      expect(ok.status).toBe(0)
+      const dir = /^rendered 1 document to (.+)\n$/.exec(ok.out)?.[1] as string
+      rmSync(dir, { recursive: true, force: true })
+    } finally {
+      rmSync(noGit, { recursive: true, force: true })
+      rmSync(out, { recursive: true, force: true })
+    }
   })
 
   it('accepts --out outside every work tree, a directory that does not exist yet included', () => {
