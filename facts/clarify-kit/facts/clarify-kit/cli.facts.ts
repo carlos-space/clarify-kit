@@ -9,12 +9,12 @@ const exitCodes = { 0: '成功', 1: '找到問題或操作被拒絕', 2: '用法
 export default [
   f.value(
     'commands',
-    history({ since: 'next', value: { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] } }),
+    history({ since: '0.1.0-alpha.1', value: { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] } }),
     { title: 'CLI 指令清單', description: '`clarify-kit` 提供 build、check、pin、render 與 adopt 五個指令。' },
   ),
   f.value(
     'build',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       usage: 'clarify-kit build [--config <file>]',
       does: '把每個 entry 的 `*.doc.ts` 編譯成 `dist/<entry>/index.json`',
       flags: { '--config': '設定檔路徑，預設 `clarify-kit.config.json`' },
@@ -24,7 +24,7 @@ export default [
   ),
   f.value(
     'check',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       usage: 'clarify-kit check [--config <file>] [--json]',
       does: '檢查文件源碼並回報問題，錯誤碼見 `clarify-kit.check.codes`',
       flags: { '--config': '設定檔路徑', '--json': '用 JSON 輸出問題，每筆含穩定的 `code`' },
@@ -34,7 +34,7 @@ export default [
   ),
   f.value(
     'adopt',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       usage: 'clarify-kit adopt <file> [--config <file>]',
       does: 'decision：把狀態改成已採納並把內文雜湊寫進源碼。record：把內文雜湊寫進源碼',
       hash: '雜湊規則見 `clarify-kit.doc-types.content-hash`',
@@ -45,7 +45,7 @@ export default [
   ),
   f.value(
     'pin',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       usage: 'clarify-kit pin --version <v> [--config <file>]',
       does: '把 `docsDir` 底下 `*.doc.ts` 裡文件、段落與區塊的 `since: next` 換成版號 `<v>`，用法同 `fact-kit pin`',
       flags: { '--version': '必填，要釘上的版號', '--config': '設定檔路徑' },
@@ -56,7 +56,7 @@ export default [
   ),
   f.value(
     'render',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       usage: 'clarify-kit render [--out <dir>] [--version <v>] [--include <label>...] [--config <file>]',
       does: '把文件渲染成 Markdown',
       flags: {
@@ -71,7 +71,7 @@ export default [
   ),
   f.value(
     'render-location',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       default: '系統暫存目錄（`os.tmpdir()`）底下的新目錄',
       outInsideWorkTree: '`--out` 指到 git 工作樹或 `.git/` 內時拒絕渲染，印出原因，結束碼非 0（1）',
       why: '渲染產物不進版控，源碼是唯一的真相',
@@ -81,7 +81,7 @@ export default [
   ),
   f.value(
     'config',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       file: 'clarify-kit.config.json',
       settings: {
         docsDir: '文件源碼目錄，相對於設定檔，預設 `docs`',
@@ -96,7 +96,7 @@ export default [
   ),
   f.value(
     'entry-rule',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       entry: '`index.ts` 所在的目錄就是一個 entry，entry 名稱是它相對 `docsDir` 的路徑',
       collect: '同目錄與子目錄的 `*.doc.ts` 依相對路徑排序收進這個 entry，預設匯出一份文件',
       nested: '子目錄有另一個 `index.ts` 時，底下的檔案歸那個 entry',

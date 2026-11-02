@@ -6,7 +6,7 @@ const f = specFacts(['index-format'], 'index')
 export default [
   f.value(
     'fields',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       topLevel: ['formatVersion', 'package', 'entry', 'describes', 'publish', 'docs'],
       meaning: {
         formatVersion: 'index 的格式版號，見 `clarify-kit.index.format-version`',
@@ -22,7 +22,7 @@ export default [
   ),
   f.value(
     'format-version',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       type: 'string',
       shape: 'major.minor',
       initial: '1.0',
@@ -35,7 +35,7 @@ export default [
   ),
   f.value(
     'doc-fields',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       required: ['id', 'type', 'title', 'topics', 'sections', 'factRefs'],
       optional: ['template', 'pending'],
       meaning: {
@@ -60,7 +60,7 @@ export default [
   ),
   f.value(
     'docs-package-convention',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       name: '`<product>-docs`',
       exports: { './<entry>/index.json': './dist/<entry>/index.json' },
       files: ['dist'],

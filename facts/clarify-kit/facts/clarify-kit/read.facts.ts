@@ -6,7 +6,7 @@ const f = specFacts(['read'], 'read')
 export default [
   f.value(
     'select',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       function: 'readDocs',
       signature: 'readDocs(spec: string, options?: { version?: string; include?: string[]; root?: string }): DocReader',
       version: '沒給 `version` 時讀 head，`next` 的內容可見；給了 `version` 時只看 `since` 不晚於它的內容',
@@ -17,7 +17,7 @@ export default [
   ),
   f.value(
     'installed',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       loader: 'loadInstalledJson(spec, root)',
       returns: '`{ data, file, packageName, entry, packageVersion }`',
       errors: { 'not-found': '找不到已安裝的套件（`FactReadError`）', 'not-an-index': 'JSON 壞掉（`FactReadError`）' },
@@ -31,7 +31,7 @@ export default [
   ),
   f.value(
     'impact-extractor',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       registeredWith: 'fact-kit 的 `impactOf` 抽取器註冊介面',
       files: '`*.doc.ts`',
       recognized: [
