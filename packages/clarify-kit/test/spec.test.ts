@@ -22,6 +22,11 @@ import {
   readConfig,
 } from '../src/index.ts'
 import { CLI, Project, cleanup } from './helpers.ts'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { DOC_READ_ERROR_CODES, USAGE, contentHashOf, doc, registerRenderer, renderProject, section, text } from '../src/index.ts'
+import type { RenderContext } from '../src/index.ts'
 
 const index = JSON.parse(
   readFileSync(new URL('../../../facts/clarify-kit/dist/clarify-kit/index.json', import.meta.url), 'utf8'),
@@ -36,7 +41,7 @@ const value = (id: string): any => {
 describe('the facts of the document model', () => {
   it('carry no pending label, so a reader without labels sees them', () => {
     const modelFacts = index.facts.filter((f) => /^clarify-kit\.(doc-types|blocks|topics|templates|modules)\./.test(f.id))
-    expect(modelFacts.length).toBe(31)
+    expect(modelFacts.length).toBe(32)
     for (const fact of modelFacts) {
       expect(facts.has(fact.id), fact.id).toBe(true)
       expect(fact.variants?.every((v) => v.pending === undefined), fact.id).toBe(true)
@@ -195,5 +200,92 @@ describe('build, check, CLI and index format against the facts', () => {
     expect(section).toContain(Object.keys(convention.exports)[0])
     expect(section).toContain('"files"')
     expect(section).toContain(JSON.stringify(convention.exports[Object.keys(convention.exports)[0] as string]))
+  })
+})
+
+describe('pin, render, read and impact against the facts', () => {
+  const run = (p: Project, ...args: string[]) => spawnSync(process.execPath, [CLI, ...args], { cwd: p.dir, encoding: 'utf8' })
+
+  it('leave no fact with a pending label, so a reader without labels sees every fact', () => {
+    expect(index.facts.length).toBeGreaterThan(0)
+    expect(facts.size).toBe(index.facts.length)
+    for (const fact of index.facts) expect(fact.variants?.every((v) => v.pending === undefined), fact.id).toBe(true)
+  })
+
+  it('runs the five commands of the commands fact, and pin and render take the flags their facts list', () => {
+    const p = new Project('spec-pin-render').config().entry()
+    for (const name of value('cli.commands').commands as string[]) {
+      expect(USAGE, name).toContain(`  ${name}`)
+      expect(run(p, name, '--bogus').stderr, name).not.toContain('unknown command')
+    }
+    for (const name of ['pin', 'render']) for (const flag of Object.keys(value(`cli.${name}`).flags)) expect(USAGE, `${name} ${flag}`).toContain(flag)
+    expect(value('cli.pin').flags['--version']).toMatch(/必填/)
+    expect(run(p, 'pin').status).toBe(value('cli.pin').exitCodes[2] ? 2 : -1)
+    expect(run(p, 'pin', '--version', '1.2.3').status).toBe(0)
+  })
+
+  it('renders to a new directory under the system temp directory, and refuses --out inside a git work tree with exit 1', () => {
+    const location = value('cli.render-location')
+    expect(location.outInsideWorkTree).toMatch(/（1）/)
+    expect(value('cli.render').exitCodes[1]).toMatch(/git 工作樹/)
+    const p = new Project('spec-render').config().entry().doc('docs/main/a.doc.ts', 'doc, section, text', `doc({ id: 'a', title: 'A', status: 'draft', sections: [section('s', 'S', [text('t')])] })`)
+    expect(run(p, 'render', '--out', p.path('out')).status).toBe(1)
+    const r = run(p, 'render')
+    expect(r.status).toBe(0)
+    const dir = /to (.+)\n$/.exec(r.stdout)?.[1] as string
+    expect(dir.replace(/^\/private/, '')).toContain(tmpdir().replace(/^\/private/, ''))
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('exports the read function the select fact names, with the options its signature lists', () => {
+    const select = value('read.select')
+    expect(typeof (api as Record<string, unknown>)[select.function]).toBe('function')
+    for (const option of ['version', 'include', 'root']) expect(select.signature).toContain(option)
+  })
+
+  it('reads an installed package with loadInstalledJson, and reports the codes the installed fact lists', () => {
+    const installed = value('read.installed')
+    expect(installed.loader).toMatch(/^loadInstalledJson/)
+    expect(Object.keys(installed.checkErrors)).toEqual([...DOC_READ_ERROR_CODES])
+    const source = readFileSync(new URL('../src/read.ts', import.meta.url), 'utf8')
+    const code = source.replace(/^\s*\/\/.*$/gm, '')
+    expect(code).toMatch(/loadInstalledJson\(/)
+    for (const name of installed.doesNotUse as string[]) expect(code, name).not.toMatch(new RegExp(`\\b${name}\\b`))
+  })
+
+  it('registers the extractor the impact fact names', () => {
+    expect(value('read.impact-extractor').register).toContain('registerDocImpactExtractor')
+    expect(typeof (api as Record<string, unknown>).registerDocImpactExtractor).toBe('function')
+  })
+
+  it('calls a registered renderer with the fields of the render context fact, and no others', async () => {
+    const fact = value('modules.render-context')
+    const seen: RenderContext[] = []
+    registerRenderer('spec-context', (f, context) => {
+      seen.push(context)
+      return f.id
+    })
+    const p = new Project('spec-context').install('facts-2x').config({ factSources: ['acme-facts-2x/acme'] }).entry().doc(
+      'docs/main/a.doc.ts',
+      'doc, section, factBlock',
+      `doc({ id: 'a', title: 'A', status: 'draft', sections: [section('s', 'S', [factBlock({ facts: 'acme.buttons.radius', renderer: 'spec-context' })])] })`,
+    )
+    const out = mkdtempSync(join(tmpdir(), 'clarify-kit-spec-'))
+    try {
+      await renderProject(readConfig(undefined, p.dir), { out })
+    } finally {
+      rmSync(out, { recursive: true, force: true })
+    }
+    expect(seen).toHaveLength(1)
+    expect(Object.keys(seen[0] as object)).toEqual(Object.keys(fact.fields))
+    expect(fact.type).toBe('RenderContext')
+  })
+
+  it('leaves since and pending out of the content hash, as the content hash fact lists', () => {
+    expect(value('doc-types.content-hash').excludes).toEqual(expect.arrayContaining(['since', 'pending']))
+    const make = (marks: Record<string, string>) =>
+      doc({ id: 'a', title: 'A', status: 'draft', sections: [section('s', 'S', [text('t', marks)], marks)] })
+    expect(contentHashOf(make({ since: 'next', pending: 'later' }))).toBe(contentHashOf(make({})))
+    expect(contentHashOf(make({ since: '1.0.0' }))).toBe(contentHashOf(make({})))
   })
 })

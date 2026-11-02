@@ -48,7 +48,14 @@ export default decision({
 | :--- | :--- | :--- |
 | `clarify-kit build [--config <file>]` | 把每個 entry 編譯成專案目錄下的 `dist/<entry>/index.json`。有檔案載入失敗時不寫任何檔案 | 0 成功，1 載入失敗，2 讀不到輸入 |
 | `clarify-kit check [--config <file>] [--json]` | 檢查文件並回報問題，每筆問題有穩定的 `code`、`message` 與 `location` | 0 沒有問題，1 有問題，2 讀不到輸入 |
+| `clarify-kit pin --version <v> [--config <file>]` | 把 `docsDir` 底下 `*.doc.ts` 裡文件、段落與區塊的 `since: 'next'` 換成 `<v>`。帶 `pending` 的不動，功能落地時先拿掉 `pending`，下一次 pin 才釘版號 | 0 成功，2 沒給 `--version`、版號不是 semver 或讀不到輸入 |
+| `clarify-kit render [--out <dir>] [--version <v>] [--include <label>...] [--config <file>]` | 把文件渲染成 Markdown，每份文件一個檔 `<out>/<entry>/<文件 id>.md`。預設寫到 `os.tmpdir()` 底下的新目錄，`--out` 在 git 工作樹或 `.git/` 內時拒絕（先解析符號連結再比對 git 根目錄），找不到 git 時也拒絕 `--out`。fact 渲染區塊呼叫模組用 `registerRenderer` 登記的函式，收到 `{ version, include, document, section }` | 0 成功，1 `--out` 在 git 工作樹或 `.git/` 內、或無法確認位置，2 讀不到輸入、`--out` 的符號連結無法解析、找不到渲染函式或 fact |
 | `clarify-kit adopt <file> [--config <file>]` | decision 改成已採納並寫入內文雜湊，record 只寫入內文雜湊。重跑會更新雜湊 | 0 成功，1 檔案不是 decision 或 record，2 讀不到檔案 |
+
+## 讀取與影響分析
+
+- `readDocs('<套件>/<entry>', { version, include, root })` 讀已安裝的 `-docs` 套件。沒給 `version` 或給 `head` 時讀 head，`next` 看得到。給版號時只看 `since` 不晚於它的內容。帶 `pending` 的內容只在讀 head 且 `include` 含該標籤時看得到。`formatVersion` 的 major 不是 1，或 `docs` 結構不對時丟 `DocReadError`。
+- `registerDocImpactExtractor()` 向 fact-kit 的 `impactOf` 註冊抽取器，讓影響分析找得到引用某個 fact 的 `*.doc.ts`。認得 `factBlock()` 與 `scenario()` 的 `facts` 裡的 id 字串、從 facts 來源匯入的 fact 物件，以及 `text()` 裡的 `fact:<id>`。算出來的 id 認不得。匯入套件時不會自動註冊。
 
 ### check 的錯誤碼
 
@@ -67,7 +74,7 @@ check 用 fact-kit 的 `loadInstalledIndex` 與 `selectFacts` 讀 `factSources` 
 
 ### 採納後內文不改
 
-decision 與 record 的雜湊只算建置後正規化的內文區塊（section 與 block，key 排序的 JSON），不含狀態、版本欄位、`since`、`supersedes` 與被取代的關係。所以發版釘版號、把 decision 改成已取代都不會被當成改內文。作者重跑 `adopt` 就能更新雜湊，這套機制防的是不小心改到內文，有意的修改仍靠 PR 審查。
+decision 與 record 的雜湊只算建置後正規化的內文區塊（section 與 block，key 排序的 JSON），不含狀態、版本欄位、`since`、`pending`、`supersedes` 與被取代的關係。所以發版釘版號、功能落地時拿掉 `pending` 標籤、把 decision 改成已取代都不會被當成改內文。作者重跑 `adopt` 就能更新雜湊，這套機制防的是不小心改到內文，有意的修改仍靠 PR 審查。
 
 ## 文件套件慣例
 

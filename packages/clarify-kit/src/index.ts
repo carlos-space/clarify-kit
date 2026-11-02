@@ -31,7 +31,7 @@ export type {
   RequirementStatus,
   Section,
 } from './docs.ts'
-export { DocModelError, InputError } from './errors.ts'
+export { DocModelError, InputError, RefusedError } from './errors.ts'
 export { AdoptError, adoptFile } from './adopt.ts'
 export type { AdoptResult } from './adopt.ts'
 export { FORMAT_VERSION, buildIndex, buildProject, readPackageName } from './build.ts'
@@ -44,6 +44,12 @@ export type { DocsEntry, PublishInfo } from './entry.ts'
 export { bodyOf, contentHashOf } from './hash.ts'
 export { DOC_FILE, PROBLEM_CODES, loadModules, loadProject } from './load.ts'
 export type { LoadedDocument, LoadedEntry, Problem, ProblemCode, Project } from './load.ts'
+export { DOC_DATA_KEYS, pinDocs } from './pin.ts'
+export { DOC_READ_ERROR_CODES, DocReadError, assertDocsIndex, readDocs, selectDocs } from './read.ts'
+export type { DocReadErrorCode, DocReader, ReadDocsOptions, SelectOptions } from './read.ts'
+export { IMPACT_EXTRACTOR_NAME, docImpactExtractor, registerDocImpactExtractor } from './impact.ts'
+export { defaultFactMarkdown, documentMarkdown, outputRefusal, renderProject } from './render.ts'
+export type { RenderOptions, RenderResult } from './render.ts'
 export { USAGE, run } from './run.ts'
 export type { Io } from './run.ts'
 export { TOPIC_PATTERN, isTopic, topic } from './topics.ts'
@@ -78,4 +84,6 @@ export function version(): string {
   return pkg.version
 }
 
-export const usage = 'usage: clarify-kit build | check | adopt <file> | --version | --help'
+
+
+export const usage = 'usage: clarify-kit build | check | pin --version <v> | render | adopt <file> | --version | --help'

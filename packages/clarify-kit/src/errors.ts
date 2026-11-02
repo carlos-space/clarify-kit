@@ -13,3 +13,11 @@ export class InputError extends Error {
     this.name = 'InputError'
   }
 }
+
+/** Raised when a command is refused on purpose, for example `render` into a git work tree. The CLI exits with 1. */
+export class RefusedError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'RefusedError'
+  }
+}

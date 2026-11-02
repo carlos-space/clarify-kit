@@ -90,13 +90,13 @@ describe('clarify-kit adopt', () => {
 })
 
 describe('the command line', () => {
-  it('exits 2 for no command, an unknown command, an unknown option and a command of a later version', () => {
+  it('exits 2 for no command, an unknown command, an unknown option and a pin without a version', () => {
     const p = project('cli-usage')
     expect(cli(p).status).toBe(2)
     expect(cli(p, 'frobnicate').status).toBe(2)
     expect(cli(p, 'build', '--nope').status).toBe(2)
-    expect(cli(p, 'pin', '--version', '1.0.0').status).toBe(2)
-    expect(cli(p, 'render').status).toBe(2)
+    expect(cli(p, 'pin').status).toBe(2)
+    expect(cli(p, 'render', '--nope').status).toBe(2)
   })
   it('exits 0 for --version and --help', () => {
     const p = project('cli-help')

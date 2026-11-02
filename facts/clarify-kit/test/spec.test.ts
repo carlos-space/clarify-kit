@@ -1,5 +1,5 @@
-// Reads the built index the way a reader on head does and compares it with the plan in the facts. A pending row
-// is only visible to a reader that passes its label as `include`, so every test passes the labels it reads.
+// Reads the built index the way a reader on head does and compares it with the plan in the facts. Every task the plan
+// was cut into has landed, so no row carries a `pending` label any more and a reader on head needs no `include`.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
@@ -10,51 +10,26 @@ const index = JSON.parse(
   readFileSync(new URL('../dist/clarify-kit/index.json', import.meta.url), 'utf8'),
 ) as FactIndex
 
-const labels = ['pin-read-impact-render']
-const all = new Map(selectFacts(index, { version: 'head', include: ['pin-read-impact-render'] }).map((f) => [f.id, f]))
+const all = new Map(selectFacts(index, { version: 'head' }).map((f) => [f.id, f]))
 const value = (id: string): any => {
   const f = all.get(`clarify-kit.${id}`)
   assert.ok(f, `no fact clarify-kit.${id}`)
   return (f.content as { value: unknown }).value
 }
 
-describe('pending rows', () => {
-  it('are hidden from a reader that includes no label, which still reads the rows that carry none', () => {
-    const plain = selectFacts(index, { version: 'head' })
-    assert.ok(plain.length > 0)
-    for (const f of plain) assert.ok(index.facts.find((x) => x.id === f.id)?.variants?.every((v) => v.pending === undefined), f.id)
-    assert.ok(plain.length < index.facts.length)
-  })
-  it('are visible once per label', () => {
-    for (const label of labels) {
-      const some = selectFacts(index, { version: 'head', include: [label] })
-      assert.ok(some.length > 0, label)
-    }
-  })
-  it('all start at next, and carry the label of the task that has not landed yet unless the code they describe is already there', () => {
+describe('rows', () => {
+  it('all start at next and carry no pending label, because the code they describe is in the repository', () => {
+    assert.ok(index.facts.length > 0)
     for (const fact of index.facts) {
       assert.ok(fact.variants && fact.variants.length > 0, fact.id)
       for (const v of fact.variants) {
         assert.equal(v.since, 'next', fact.id)
-        assert.ok(v.pending === undefined || labels.includes(v.pending), `${fact.id}: ${v.pending}`)
+        assert.equal(v.pending, undefined, fact.id)
       }
     }
   })
-  it('are left on no fact of the document model, build and check, which the package implements', () => {
-    for (const fact of index.facts) {
-      const topic = fact.id.split('.')[1]
-      if (['doc-types', 'blocks', 'topics', 'templates', 'modules', 'index', 'check'].includes(topic ?? '')) {
-        assert.ok(fact.variants?.every((v) => v.pending === undefined), fact.id)
-      }
-    }
-    for (const name of ['commands', 'build', 'check', 'adopt', 'config', 'entry-rule']) {
-      assert.ok(index.facts.find((f) => f.id === `clarify-kit.cli.${name}`)?.variants?.every((v) => v.pending === undefined), name)
-    }
-  })
-  it('stay on the facts of the pin, render and read commands, and nowhere else', () => {
-    const pending = index.facts.filter((f) => f.variants?.some((v) => v.pending !== undefined)).map((f) => f.id.split('.')[1])
-    assert.ok(pending.length > 0)
-    for (const topic of pending) assert.ok(['cli', 'read'].includes(topic ?? ''), String(topic))
+  it('are all read by a reader on head that includes no label', () => {
+    assert.equal(all.size, index.facts.length)
   })
 })
 
@@ -83,7 +58,7 @@ describe('doc types', () => {
   it('hash the body only, for decision and record', () => {
     const hash = value('doc-types.content-hash')
     assert.deepEqual(hash.appliesTo, ['decision', 'record'])
-    assert.deepEqual(hash.excludes, ['狀態', '版本欄位', 'since', 'supersedes', '被取代的關係'])
+    assert.deepEqual(hash.excludes, ['狀態', '版本欄位', 'since', 'pending', 'supersedes', '被取代的關係'])
     assert.equal(hash.writtenBy, 'adopt')
   })
 })
@@ -199,7 +174,7 @@ describe('CLI, config, entry rule, index format and check codes', () => {
   })
 })
 
-describe('pin, render, read and impact (pin-read-impact-render)', () => {
+describe('pin, render, read and impact', () => {
   it('pin needs --version and render refuses a work tree', () => {
     assert.ok(value('cli.pin').flags['--version'])
     const render = value('cli.render-location')
@@ -218,6 +193,16 @@ describe('pin, render, read and impact (pin-read-impact-render)', () => {
     assert.deepEqual(installed.doesNotUse, ['assertIndexFormat', 'loadInstalledIndex'])
     assert.match(installed.thenChecks.join('\n'), /major 是 1/)
     assert.match(installed.thenChecks.join('\n'), /`docs`/)
+  })
+  it('pin leaves a pending row alone and the hash leaves out since and pending', () => {
+    assert.match(value('cli.pin').keeps, /帶 `pending`.*不動/)
+    assert.match(value('cli.pin').keeps, /雜湊排除 `since` 與 `pending`/)
+    assert.ok(value('doc-types.content-hash').excludes.includes('pending'))
+  })
+  it('give a renderer the version, the include labels and the place of the block', () => {
+    const context = value('modules.render-context')
+    assert.equal(context.type, 'RenderContext')
+    assert.deepEqual(Object.keys(context.fields), ['version', 'include', 'document', 'section'])
   })
   it('name the references the extractor recognizes', () => {
     const extractor = value('read.impact-extractor')

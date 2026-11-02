@@ -25,6 +25,21 @@ export default [
     { title: '模組登記渲染函式', description: '模組用 `registerRenderer` 登記 fact 的渲染函式，fact 渲染區塊用名稱選它。' },
   ),
   f.value(
+    'render-context',
+    history({ since: 'next', value: {
+      type: 'RenderContext',
+      fields: {
+        version: '讀者執行的版本，或 `head`；與渲染挑 fact 時用的 `version` 相同',
+        include: '讀者帶入的 `pending` 標籤；與渲染挑 fact 時用的 `include` 相同',
+        document: '區塊所在的文件，`{ id, type }`',
+        section: '區塊所在段落的 id',
+      },
+      why: '渲染函式查另一個 fact 時能用同一個讀者，並能寫出整批渲染內唯一的錨點與連結',
+      calledBy: 'render 對每個 fact 渲染區塊的每個 fact 呼叫一次',
+    } }),
+    { title: 'RenderContext', description: '渲染函式收到的讀者與區塊位置：version、include、document 與 section。' },
+  ),
+  f.value(
     'scope',
     history({ since: 'next', value: {
       provides: ['fact 的 builder 與檢查', '範本', '渲染函式'],

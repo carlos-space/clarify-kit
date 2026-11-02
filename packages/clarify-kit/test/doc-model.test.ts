@@ -193,7 +193,7 @@ describe('modules register templates and renderers', () => {
     expect(d).toMatchObject({ type: 'doc', template: 'acme-brand' })
     expect(getTemplate('acme-brand')?.sections.map((s) => s.required)).toEqual([true, true, false])
     expect(missingSections(d)).toEqual([])
-    expect(getRenderer('acme-swatch')?.({ id: 'a.b' } as never, { version: 'head', include: [] })).toBe('swatch a.b')
+    expect(getRenderer('acme-swatch')?.({ id: 'a.b' } as never, { version: 'head', include: [], document: { id: 'brand', type: 'doc' }, section: 'colors' })).toBe('swatch a.b')
     expect(listRenderers()).toContain('acme-swatch')
   })
 
