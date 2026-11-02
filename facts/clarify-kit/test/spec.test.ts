@@ -10,10 +10,8 @@ const index = JSON.parse(
   readFileSync(new URL('../dist/clarify-kit/index.json', import.meta.url), 'utf8'),
 ) as FactIndex
 
-const labels = ['build-check', 'pin-read-impact-render']
-const all = new Map(
-  selectFacts(index, { version: 'head', include: ['build-check', 'pin-read-impact-render'] }).map((f) => [f.id, f]),
-)
+const labels = ['pin-read-impact-render']
+const all = new Map(selectFacts(index, { version: 'head', include: ['pin-read-impact-render'] }).map((f) => [f.id, f]))
 const value = (id: string): any => {
   const f = all.get(`clarify-kit.${id}`)
   assert.ok(f, `no fact clarify-kit.${id}`)
@@ -33,7 +31,7 @@ describe('pending rows', () => {
       assert.ok(some.length > 0, label)
     }
   })
-  it('all start at next, and carry one of the two labels unless the code they describe is already there', () => {
+  it('all start at next, and carry the label of the task that has not landed yet unless the code they describe is already there', () => {
     for (const fact of index.facts) {
       assert.ok(fact.variants && fact.variants.length > 0, fact.id)
       for (const v of fact.variants) {
@@ -42,13 +40,21 @@ describe('pending rows', () => {
       }
     }
   })
-  it('are left on no fact of the document model, which the package implements', () => {
+  it('are left on no fact of the document model, build and check, which the package implements', () => {
     for (const fact of index.facts) {
       const topic = fact.id.split('.')[1]
-      if (['doc-types', 'blocks', 'topics', 'templates', 'modules'].includes(topic ?? '')) {
+      if (['doc-types', 'blocks', 'topics', 'templates', 'modules', 'index', 'check'].includes(topic ?? '')) {
         assert.ok(fact.variants?.every((v) => v.pending === undefined), fact.id)
       }
     }
+    for (const name of ['commands', 'build', 'check', 'adopt', 'config', 'entry-rule']) {
+      assert.ok(index.facts.find((f) => f.id === `clarify-kit.cli.${name}`)?.variants?.every((v) => v.pending === undefined), name)
+    }
+  })
+  it('stay on the facts of the pin, render and read commands, and nowhere else', () => {
+    const pending = index.facts.filter((f) => f.variants?.some((v) => v.pending !== undefined)).map((f) => f.id.split('.')[1])
+    assert.ok(pending.length > 0)
+    for (const topic of pending) assert.ok(['cli', 'read'].includes(topic ?? ''), String(topic))
   })
 })
 
@@ -124,7 +130,7 @@ describe('blocks, topics, templates and modules', () => {
   })
 })
 
-describe('CLI, config, entry rule and index format (build-check)', () => {
+describe('CLI, config, entry rule, index format and check codes', () => {
   it('list the five commands', () => {
     assert.deepEqual(value('cli.commands').commands, ['build', 'check', 'pin', 'render', 'adopt'])
     for (const name of value('cli.commands').commands) assert.ok(all.has(`clarify-kit.cli.${name}`), name)
@@ -151,6 +157,14 @@ describe('CLI, config, entry rule and index format (build-check)', () => {
     assert.match(version.reader, /同一個 major/)
     assert.equal(version.dataVersionField, null)
   })
+  it('list the fields of a document, among them id, factRefs and template', () => {
+    const fields = value('index.doc-fields')
+    for (const name of ['id', 'factRefs']) assert.ok(fields.required.includes(name), name)
+    assert.ok(fields.optional.includes('template'))
+    assert.deepEqual(Object.keys(fields.meaning), [...fields.required, ...fields.optional])
+    assert.deepEqual(Object.keys(fields.byType), ['doc', 'requirement', 'decision', 'record'])
+    assert.equal(fields.noOtherFields, true)
+  })
   it('state the docs package convention', () => {
     const convention = value('index.docs-package-convention')
     assert.equal(convention.name, '`<product>-docs`')
@@ -171,6 +185,14 @@ describe('CLI, config, entry rule and index format (build-check)', () => {
       assert.ok(codes.includes(code), code)
     }
     assert.ok(codes.length >= 6)
+    assert.deepEqual(codes.slice(0, 6), [
+      'missing-required-section',
+      'unknown-fact-reference',
+      'adopted-content-changed',
+      'supersedes-unknown',
+      'scenario-without-fact',
+      'outside-entry',
+    ])
   })
   it('read facts through fact-kit', () => {
     assert.match(value('check.fact-lookup').rule, /readFacts.*selectFacts/)

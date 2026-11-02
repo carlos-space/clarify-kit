@@ -6,7 +6,7 @@ const f = specFacts(['check'], 'check')
 export default [
   f.value(
     'codes',
-    history({ since: 'next', pending: 'build-check', value: {
+    history({ since: 'next', value: {
       codes: {
         'missing-required-section': '文件缺範本的必要段落',
         'unknown-fact-reference': '區塊引用不存在的 fact',
@@ -14,6 +14,13 @@ export default [
         'supersedes-unknown': '`supersedes` 指向不存在的 decision',
         'scenario-without-fact': 'requirement 的驗收情境沒有引用 fact',
         'outside-entry': '`*.doc.ts` 不在任何 entry 底下',
+        'load-error': '`index.ts` 或 `*.doc.ts` 載入失敗，或預設匯出不是文件',
+        'duplicate-document-id': '同一個 entry 內有兩份文件的 `id` 相同',
+      },
+      scope: {
+        'supersedes-unknown': '`supersedes` 只在同一個 entry 的 decision 之間解析',
+        'unknown-fact-reference': '到設定檔 `factSources` 列的 facts 套件找，找法見 `clarify-kit.check.fact-lookup`，pending 列也算存在',
+        'adopted-content-changed': '文件帶 `contentHash` 就比對，不看狀態',
       },
       stable: '`code` 穩定，訊息給人看',
       output: '每筆問題含 `code`、`message` 與 `location`',
@@ -23,7 +30,7 @@ export default [
   ),
   f.value(
     'fact-lookup',
-    history({ since: 'next', pending: 'build-check', value: {
+    history({ since: 'next', value: {
       rule: '檢查 fact 引用時，用 fact-kit 的 `readFacts` 或 `selectFacts` 讀 fact，不自己解析 `index.json`',
       why: 'fact 的版本與 pending 選取規則只在 fact-kit 一處實作',
     } }),

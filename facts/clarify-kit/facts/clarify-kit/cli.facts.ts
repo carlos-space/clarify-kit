@@ -9,12 +9,12 @@ const exitCodes = { 0: '成功', 1: '找到問題或操作被拒絕', 2: '用法
 export default [
   f.value(
     'commands',
-    history({ since: 'next', pending: 'build-check', value: { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] } }),
+    history({ since: 'next', value: { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] } }),
     { title: 'CLI 指令清單', description: '`clarify-kit` 提供 build、check、pin、render 與 adopt 五個指令。' },
   ),
   f.value(
     'build',
-    history({ since: 'next', pending: 'build-check', value: {
+    history({ since: 'next', value: {
       usage: 'clarify-kit build [--config <file>]',
       does: '把每個 entry 的 `*.doc.ts` 編譯成 `dist/<entry>/index.json`',
       flags: { '--config': '設定檔路徑，預設 `clarify-kit.config.json`' },
@@ -24,7 +24,7 @@ export default [
   ),
   f.value(
     'check',
-    history({ since: 'next', pending: 'build-check', value: {
+    history({ since: 'next', value: {
       usage: 'clarify-kit check [--config <file>] [--json]',
       does: '檢查文件源碼並回報問題，錯誤碼見 `clarify-kit.check.codes`',
       flags: { '--config': '設定檔路徑', '--json': '用 JSON 輸出問題，每筆含穩定的 `code`' },
@@ -34,7 +34,7 @@ export default [
   ),
   f.value(
     'adopt',
-    history({ since: 'next', pending: 'build-check', value: {
+    history({ since: 'next', value: {
       usage: 'clarify-kit adopt <file> [--config <file>]',
       does: 'decision：把狀態改成已採納並把內文雜湊寫進源碼。record：把內文雜湊寫進源碼',
       hash: '雜湊規則見 `clarify-kit.doc-types.content-hash`',
@@ -81,20 +81,22 @@ export default [
   ),
   f.value(
     'config',
-    history({ since: 'next', pending: 'build-check', value: {
+    history({ since: 'next', value: {
       file: 'clarify-kit.config.json',
       settings: {
         docsDir: '文件源碼目錄，相對於設定檔，預設 `docs`',
         modules: '要載入的模組套件名稱陣列，預設為空',
         repoRoot: '倉庫根目錄，相對於設定檔，預設是含 `.git` 的最近上層',
+        factSources: '文件會引用 fact 的 facts 套件，寫成 `<套件>/<entry>` 的陣列，從設定檔所在目錄解析，預設為空',
       },
       precedence: '命令列旗標優先於設定檔',
+      projectDir: '設定檔所在目錄是專案目錄，`dist/`、`package.json` 與 facts 套件都從這裡找；沒有設定檔時是工作目錄',
     } }),
     { title: '設定檔', description: '`clarify-kit.config.json` 的設定項與預設值。' },
   ),
   f.value(
     'entry-rule',
-    history({ since: 'next', pending: 'build-check', value: {
+    history({ since: 'next', value: {
       entry: '`index.ts` 所在的目錄就是一個 entry，entry 名稱是它相對 `docsDir` 的路徑',
       collect: '同目錄與子目錄的 `*.doc.ts` 依相對路徑排序收進這個 entry，預設匯出一份文件',
       nested: '子目錄有另一個 `index.ts` 時，底下的檔案歸那個 entry',
