@@ -45,18 +45,18 @@ export default [
   ),
   f.value(
     'pin',
-    history({ since: 'next', pending: 'pin-read-impact-render', value: {
+    history({ since: 'next', value: {
       usage: 'clarify-kit pin --version <v> [--config <file>]',
-      does: '把文件與區塊的 `since: next` 換成版號 `<v>`，並移除已釋出的 pending 標籤',
+      does: '把 `docsDir` 底下 `*.doc.ts` 裡文件、段落與區塊的 `since: next` 換成版號 `<v>`，用法同 `fact-kit pin`',
       flags: { '--version': '必填，要釘上的版號', '--config': '設定檔路徑' },
       exitCodes: { ...exitCodes, 2: '沒給 `--version` 或版號不是 semver' },
-      keeps: '不動內文區塊，所以不影響採納後內文的雜湊',
+      keeps: '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。雜湊排除 `since` 與 `pending`，所以 pin 與拿掉標籤都不影響採納後內文的雜湊',
     } }),
     { title: 'pin 指令', description: '發版時把 `next` 釘成版號，用法同 `fact-kit pin`。' },
   ),
   f.value(
     'render',
-    history({ since: 'next', pending: 'pin-read-impact-render', value: {
+    history({ since: 'next', value: {
       usage: 'clarify-kit render [--out <dir>] [--version <v>] [--include <label>...] [--config <file>]',
       does: '把文件渲染成 Markdown',
       flags: {
@@ -71,11 +71,11 @@ export default [
   ),
   f.value(
     'render-location',
-    history({ since: 'next', pending: 'pin-read-impact-render', value: {
+    history({ since: 'next', value: {
       default: '系統暫存目錄（`os.tmpdir()`）底下的新目錄',
       outInsideWorkTree: '`--out` 指到 git 工作樹內時拒絕渲染，印出原因，結束碼非 0（1）',
       why: '渲染產物不進版控，源碼是唯一的真相',
-      detect: '用 `git rev-parse --is-inside-work-tree` 在輸出目錄判斷',
+      detect: '用 `git rev-parse --is-inside-work-tree` 在輸出目錄判斷，目錄還不存在時在最近的上層目錄判斷',
     } }),
     { title: 'render 只輸出到 git 工作樹外', description: '渲染位置預設在系統暫存目錄，`--out` 在 git 工作樹內時拒絕。' },
   ),

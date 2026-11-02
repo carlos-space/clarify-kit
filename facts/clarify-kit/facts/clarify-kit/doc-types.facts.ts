@@ -64,7 +64,7 @@ export default [
     history({ since: 'next', value: {
       algorithm: 'sha256',
       input: '建置後正規化的內文區塊（key 排序的 JSON）',
-      excludes: ['狀態', '版本欄位', 'since', 'supersedes', '被取代的關係'],
+      excludes: ['狀態', '版本欄位', 'since', 'pending', 'supersedes', '被取代的關係'],
       appliesTo: ['decision', 'record'],
       writtenBy: 'adopt',
       checkedBy: 'adopted-content-changed',
@@ -72,7 +72,7 @@ export default [
     } }),
     {
       title: '採納後內文的雜湊規則',
-      description: '採納時把內文雜湊寫進源碼。雜湊只算內文區塊，不含狀態、版本欄位、`since`、`supersedes` 與被取代的關係，所以 pin 與取代不會被當成改內文。record 用同一套雜湊。',
+      description: '採納時把內文雜湊寫進源碼。雜湊只算內文區塊，不含狀態、版本欄位、`since`、`pending`、`supersedes` 與被取代的關係。`since` 與 `pending` 都是發布標記，不是內文，所以 pin、拿掉 `pending` 標籤與取代不會被當成改內文。record 用同一套雜湊。',
     },
   ),
   f.value(

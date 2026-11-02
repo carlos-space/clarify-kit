@@ -20,12 +20,21 @@ export interface Template {
   sections: TemplateSection[]
 }
 
-/** What a renderer is told about the reader it renders for. */
+/**
+ * What a renderer is told about the reader it renders for and the place of the fact block, as
+ * `clarify-kit.modules.render-context` lists them. `version` and `include` are the ones the facts were chosen with, so a
+ * renderer that looks up another fact reads it the same way. `document` and `section` let it write anchors and links
+ * that are unique across the documents of one render.
+ */
 export interface RenderContext {
   /** The version the reader runs, or "head". */
   readonly version: string
   /** The `pending` labels the reader includes. */
   readonly include: readonly string[]
+  /** The document the fact block is in. */
+  readonly document: { readonly id: string; readonly type: DocType }
+  /** The id of the section the fact block is in. */
+  readonly section: string
 }
 export type Renderer = (fact: SelectedFact, context: RenderContext) => string
 

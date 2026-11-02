@@ -6,7 +6,7 @@ const f = specFacts(['read'], 'read')
 export default [
   f.value(
     'select',
-    history({ since: 'next', pending: 'pin-read-impact-render', value: {
+    history({ since: 'next', value: {
       function: 'readDocs',
       signature: 'readDocs(spec: string, options?: { version?: string; include?: string[]; root?: string }): DocReader',
       version: '沒給 `version` 時讀 head，`next` 的內容可見；給了 `version` 時只看 `since` 不晚於它的內容',
@@ -17,20 +17,21 @@ export default [
   ),
   f.value(
     'installed',
-    history({ since: 'next', pending: 'pin-read-impact-render', value: {
+    history({ since: 'next', value: {
       loader: 'loadInstalledJson(spec, root)',
       returns: '`{ data, file, packageName, entry, packageVersion }`',
-      errors: { 'not-found': '找不到已安裝的套件', 'not-an-index': 'JSON 壞掉' },
+      errors: { 'not-found': '找不到已安裝的套件（`FactReadError`）', 'not-an-index': 'JSON 壞掉（`FactReadError`）' },
+      checkErrors: { 'unsupported-format-version': '`formatVersion` 的 major 不是 1', 'not-a-docs-index': '缺 `docs` 陣列，或文件、段落、區塊的結構不對（`DocReadError`）' },
       thenChecks: ['`formatVersion` 的 major 是 1，否則回報 `unsupported-format-version`', '`docs` 是陣列，每份文件有類型與內文區塊'],
       doesNotUse: ['assertIndexFormat', 'loadInstalledIndex'],
       why: '`assertIndexFormat` 看的是 fact-kit 的 `indexFormat`，docs index 沒有這個欄位',
-      availability: 'loadInstalledJson 隨 fact-kit 下一版發布，名稱以那一版為準',
+      availability: 'loadInstalledJson 自 fact-kit 0.12.0 起匯出',
     } }),
     { title: '讀已安裝的 docs 套件', description: '用 `loadInstalledJson` 讀 `-docs`，再由 clarify-kit 自己檢查 `formatVersion` 與 `docs`，不用 `assertIndexFormat`。' },
   ),
   f.value(
     'impact-extractor',
-    history({ since: 'next', pending: 'pin-read-impact-render', value: {
+    history({ since: 'next', value: {
       registeredWith: 'fact-kit 的 `impactOf` 抽取器註冊介面',
       files: '`*.doc.ts`',
       recognized: [
@@ -40,7 +41,8 @@ export default [
       ],
       notRecognized: '運算出來的 id（例如字串串接）',
       result: '`impactOf` 找得到文件引用的 fact',
-      availability: '抽取器註冊介面隨 fact-kit 下一版發布，名稱以那一版為準',
+      availability: '`registerImpactExtractor` 與 `ImpactExtractor` 自 fact-kit 0.12.0 起匯出',
+      register: '`registerDocImpactExtractor()` 向 `impactOf` 註冊，回傳取消註冊的函式；匯入套件時不自動註冊',
     } }),
     { title: '影響分析抽取器', description: '向 fact-kit 註冊抽取器，讓 `impactOf` 找到引用某個 fact 的 `.doc.ts`。' },
   ),

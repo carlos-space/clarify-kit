@@ -39,7 +39,7 @@ export default [
       appliesTo: ['文件', '每個區塊'],
       since: '版號字串、`next`，或每個發布線一個版號的陣列，寫法同 fact 的 `since`',
       pending: '標籤字串。帶 `pending` 的區塊只有 `include` 含該標籤的 head 讀者看得到',
-      pin: 'pin 把 `next` 換成版號，並移除該版的 pending 標籤',
+      pin: 'pin 把 `next` 換成版號，帶 `pending` 的不動；功能落地時作者拿掉 `pending` 標籤，下一次 pin 才釘版號',
     } }),
     { title: '區塊的 since 與 pending', description: '文件和每個區塊都可標 `since` 或 `pending`，寫法同 fact。' },
   ),
