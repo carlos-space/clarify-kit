@@ -1,0 +1,23 @@
+{
+  "name": "sample-product-docs",
+  "version": "0.1.0",
+  "description": "Documents of the sample product that the clarify-kit repository runs a round of write, pin and read on",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "clarify-kit build",
+    "check": "clarify-kit check"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "clarify-kit": "workspace:*",
+    "fact-kit": "^0.12.0",
+    "oxc-parser": "^0.155.0",
+    "sample-product-facts": "workspace:*"
+  },
+  "exports": {
+    "./shop/index.json": "./dist/shop/index.json"
+  }
+}
