@@ -25,7 +25,7 @@ import { CLI, Project, cleanup } from './helpers.ts'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { DOC_READ_ERROR_CODES, USAGE, contentHashOf, doc, registerRenderer, renderProject, section, text, factBlock } from '../src/index.ts'
+import { DOC_READ_ERROR_CODES, USAGE, contentHashOf, doc, registerRenderer, renderProject, section, text } from '../src/index.ts'
 import type { RenderContext } from '../src/index.ts'
 
 const index = JSON.parse(
@@ -279,7 +279,6 @@ describe('pin, render, read and impact against the facts', () => {
     expect(seen).toHaveLength(1)
     expect(Object.keys(seen[0] as object)).toEqual(Object.keys(fact.fields))
     expect(fact.type).toBe('RenderContext')
-    void [doc, section, text, factBlock]
   })
 
   it('leaves since and pending out of the content hash, as the content hash fact lists', () => {
