@@ -2,7 +2,7 @@ import { specFacts, next } from '../../../_lib/spec.ts'
 
 const f = specFacts(['index-format'], 'index')
 
-export const indexFormatFacts = [
+export default [
   f.value(
     'fields',
     next('build-check', {

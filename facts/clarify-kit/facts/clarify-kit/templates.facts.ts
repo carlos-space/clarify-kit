@@ -9,7 +9,7 @@ const template = (name: string, type: 'doc' | 'record', required: string[], desc
     description,
   })
 
-export const templateFacts = [
+export default [
   template('vision', 'doc', ['purpose', 'audience', 'outcome'], '願景：為什麼做、給誰、成功的樣子。'),
   template('goal', 'doc', ['objective', 'measure', 'non-goals'], '目標：要達成什麼、怎麼量、不做什麼。'),
   template('problem', 'doc', ['situation', 'impact', 'cause'], '問題：現況、影響、成因。'),

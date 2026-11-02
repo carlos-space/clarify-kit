@@ -2,7 +2,7 @@ import { specFacts, next } from '../../../_lib/spec.ts'
 
 const f = specFacts(['check'], 'check')
 
-export const checkCodeFacts = [
+export default [
   f.value(
     'codes',
     next('build-check', {

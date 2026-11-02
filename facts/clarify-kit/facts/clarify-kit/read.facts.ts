@@ -2,7 +2,7 @@ import { specFacts, next } from '../../../_lib/spec.ts'
 
 const f = specFacts(['read'], 'read')
 
-export const readApiFacts = [
+export default [
   f.value(
     'select',
     next('pin-read-impact-render', {

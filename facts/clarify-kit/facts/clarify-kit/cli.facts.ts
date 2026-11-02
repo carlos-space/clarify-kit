@@ -5,7 +5,7 @@ const f = specFacts(['cli'], 'cli')
 /** Exit codes shared by every command, the same as fact-kit's. */
 const exitCodes = { 0: '成功', 1: '找到問題或操作被拒絕', 2: '用法錯誤或讀不到輸入' }
 
-export const cliFacts = [
+export default [
   f.value(
     'commands',
     next('build-check', { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] }),

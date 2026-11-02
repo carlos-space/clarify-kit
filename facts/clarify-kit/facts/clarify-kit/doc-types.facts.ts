@@ -2,7 +2,7 @@ import { specFacts, next } from '../../../_lib/spec.ts'
 
 const f = specFacts(['doc-model'], 'doc-types')
 
-export const docTypeFacts = [
+export default [
   f.value(
     'doc',
     next('doc-model', {

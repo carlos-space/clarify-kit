@@ -2,7 +2,7 @@ import { specFacts, next } from '../../../_lib/spec.ts'
 
 const f = specFacts(['doc-model'], 'modules')
 
-export const moduleFacts = [
+export default [
   f.value(
     'register-template',
     next('doc-model', {

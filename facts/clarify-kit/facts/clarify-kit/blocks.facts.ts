@@ -11,7 +11,7 @@ const block = (kind: string, title: string, fields: Record<string, string>) =>
     description: `${title}區塊的欄位。`,
   })
 
-export const blockFacts = [
+export default [
   block('text', '文字', { text: '內文，Markdown 行內語法' }),
   block('list', '清單', { items: '文字陣列', ordered: '選填，true 為序號清單' }),
   block('table', '表格', { columns: '欄名陣列', rows: '列陣列，每列的格數等於欄數' }),
