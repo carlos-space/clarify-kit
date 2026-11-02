@@ -1,0 +1,9 @@
+{
+  "name": "acme-facts-1x",
+  "version": "1.4.0",
+  "description": "A facts package built by fact-kit 0.x, index format 1.0: no indexFormat, one row per fact.",
+  "type": "module",
+  "exports": {
+    "./acme/index.json": "./acme/index.json"
+  }
+}

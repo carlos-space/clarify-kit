@@ -1,0 +1,54 @@
+{
+  "indexFormat": "1.2",
+  "package": "acme-facts-1x2",
+  "entry": "acme",
+  "describes": {
+    "acme": "1.5.0"
+  },
+  "facts": [
+    {
+      "id": "acme.layout.gutter",
+      "tool": "acme",
+      "topics": [
+        "design:token"
+      ],
+      "title": "Gutter",
+      "source": {
+        "kind": "published"
+      },
+      "variants": [
+        {
+          "since": "1.2.0",
+          "content": {
+            "value": 16
+          }
+        }
+      ],
+      "content": {
+        "value": 16
+      }
+    },
+    {
+      "id": "acme.layout.columns",
+      "tool": "acme",
+      "topics": [
+        "design:token"
+      ],
+      "title": "Columns",
+      "source": {
+        "kind": "published"
+      },
+      "variants": [
+        {
+          "since": "1.0.0",
+          "content": {
+            "value": 12
+          }
+        }
+      ],
+      "content": {
+        "value": 12
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "package": "acme-facts-1x",
+  "entry": "acme",
+  "describes": { "acme": "1.4.0" },
+  "facts": [
+    {
+      "id": "acme.tokens.color-primary",
+      "tool": "acme",
+      "topics": ["design:token"],
+      "title": "Primary color",
+      "content": { "value": "#0055ff" },
+      "when": { "since": "1.0.0" },
+      "source": { "kind": "published" }
+    },
+    {
+      "id": "acme.tokens.spacing",
+      "tool": "acme",
+      "topics": ["design:token"],
+      "title": "Spacing",
+      "content": { "value": 8 },
+      "source": { "kind": "published" }
+    }
+  ]
+}

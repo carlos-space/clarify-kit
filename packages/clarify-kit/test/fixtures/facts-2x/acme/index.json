@@ -1,0 +1,28 @@
+{
+  "indexFormat": "2.0",
+  "formatVersion": "2.0",
+  "package": "acme-facts-2x",
+  "entry": "acme",
+  "describes": { "acme": "2.1.0" },
+  "publish": { "target": "npm", "name": "acme" },
+  "facts": [
+    {
+      "id": "acme.buttons.radius",
+      "tool": "acme",
+      "topics": ["design:token"],
+      "title": "Button radius",
+      "content": { "value": 4 },
+      "variants": [{ "since": "2.0.0", "content": { "value": 4 } }],
+      "source": { "kind": "published" }
+    },
+    {
+      "id": "acme.buttons.shadow",
+      "tool": "acme",
+      "topics": ["design:token"],
+      "title": "Button shadow",
+      "content": { "value": "none" },
+      "variants": [{ "since": "next", "pending": "shadows", "content": { "value": "0 1px 2px" } }],
+      "source": { "kind": "published" }
+    }
+  ]
+}
