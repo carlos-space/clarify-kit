@@ -1,0 +1,4 @@
+{
+  "docsDir": "docs",
+  "factSources": ["sample-product-facts/shop"]
+}

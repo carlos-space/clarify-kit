@@ -1,0 +1,21 @@
+{
+  "name": "sample-product-facts",
+  "version": "0.1.0",
+  "description": "Facts of the sample product that the clarify-kit repository runs its documents against",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "fact-kit build"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "fact-kit": "^0.12.0",
+    "oxc-parser": "^0.155.0"
+  },
+  "exports": {
+    "./shop/index.json": "./dist/shop/index.json",
+    "./shop/schemas/*": "./dist/shop/schemas/*"
+  }
+}
