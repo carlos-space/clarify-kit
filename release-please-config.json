@@ -7,14 +7,45 @@
   "separate-pull-requests": false,
   "bump-minor-pre-major": true,
   "changelog-sections": [
-    { "type": "feat", "section": "Added" },
-    { "type": "fix", "section": "Fixed" },
-    { "type": "perf", "section": "Changed" },
-    { "type": "deps", "section": "Changed" },
-    { "type": "revert", "section": "Changed" }
+    {
+      "type": "feat",
+      "section": "Added"
+    },
+    {
+      "type": "fix",
+      "section": "Fixed"
+    },
+    {
+      "type": "perf",
+      "section": "Changed"
+    },
+    {
+      "type": "deps",
+      "section": "Changed"
+    },
+    {
+      "type": "revert",
+      "section": "Changed"
+    }
   ],
   "packages": {
-    "packages/clarify-kit": { "component": "clarify-kit", "release-type": "node", "initial-version": "0.1.0" },
-    "facts": { "component": "clarify-kit-facts", "release-type": "node", "changelog-path": "CHANGELOG.md", "initial-version": "0.1.0" }
-  }
+    "packages/clarify-kit": {
+      "component": "clarify-kit",
+      "release-type": "node",
+      "initial-version": "0.1.0-alpha.1",
+      "versioning": "prerelease",
+      "prerelease-type": "alpha.1",
+      "prerelease": true
+    },
+    "facts": {
+      "component": "clarify-kit-facts",
+      "release-type": "node",
+      "changelog-path": "CHANGELOG.md",
+      "initial-version": "0.1.0-alpha.1",
+      "versioning": "prerelease",
+      "prerelease-type": "alpha.1",
+      "prerelease": true
+    }
+  },
+  "plugins": []
 }
