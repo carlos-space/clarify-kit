@@ -1,4 +1,5 @@
 import type { FactsModule } from 'fact-kit'
+import { describesOf } from '../../../_lib/describes.ts'
 import { blockFacts } from './blocks.ts'
 import { checkCodeFacts } from './check-codes.ts'
 import { cliFacts } from './cli.ts'
@@ -9,9 +10,8 @@ import { readApiFacts } from './read.ts'
 import { templateFacts } from './templates.ts'
 import { topicFacts } from './topics.ts'
 
-// `describes` is a literal until the repository has a release-please manifest to read it from.
 const entry: FactsModule = {
-  describes: { 'clarify-kit': '0.0.0' },
+  describes: describesOf('clarify-kit'),
   publish: { target: 'npm', name: 'clarify-kit' },
   facts: [
     ...docTypeFacts,

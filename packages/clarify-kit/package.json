@@ -1,0 +1,48 @@
+{
+  "name": "clarify-kit",
+  "version": "0.0.0",
+  "description": "Turns a discussion into the documents that settle it. Skeleton: the implementation comes in later tasks.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlos-space/clarify-kit.git",
+    "directory": "packages/clarify-kit"
+  },
+  "bin": {
+    "clarify-kit": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "fact-kit": "^0.11.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4",
+    "fact-kit": "^0.11.1",
+    "typescript": "7.1.0-beta",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@12.3.4"
+}
