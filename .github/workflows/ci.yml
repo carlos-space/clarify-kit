@@ -144,3 +144,27 @@ jobs:
         run: bash scripts/ci/check-facts.sh
       - name: describes follows the manifest
         run: bash scripts/ci/check-facts-describes.sh
+
+  # The sample product in examples/sample-product runs one round on every run: build both packages, pin `next` to a
+  # version on a copy in a scratch directory, and read by version before and after (scripts/ci/sample-product.sh).
+  # The committed sources are never rewritten, and the script fails when git status differs after the run.
+  # The packages are not published; npm pack --dry-run only shows what they would ship.
+  sample-product:
+    needs: scope
+    if: needs.scope.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Build
+        run: pnpm build
+      - name: One round of the sample product (build, pin, read by version)
+        run: bash scripts/ci/sample-product.sh
+      - name: npm pack --dry-run (facts and docs packages)
+        run: |
+          for pkg in examples/sample-product/sample-product-facts examples/sample-product/sample-product-docs; do
+            (cd "$pkg" && npm pack --dry-run)
+          done
