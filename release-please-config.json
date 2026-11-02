@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "$comment": "Single config for every unit. Versioning happens only on release/v* branches: cut-release.sh copies this file onto the branch filtered to the train's units and gives each unit the versioning and prerelease-type its stage in release-policy.json calls for; finalize-release.sh --phase ga takes the units out of prerelease mode. main never carries version commits. This repository has two units: packages/clarify-kit and the facts aggregate at facts.",
+  "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "tag-separator": "/",
+  "separate-pull-requests": false,
+  "bump-minor-pre-major": true,
+  "changelog-sections": [
+    { "type": "feat", "section": "Added" },
+    { "type": "fix", "section": "Fixed" },
+    { "type": "perf", "section": "Changed" },
+    { "type": "deps", "section": "Changed" },
+    { "type": "revert", "section": "Changed" }
+  ],
+  "packages": {
+    "packages/clarify-kit": { "component": "clarify-kit", "release-type": "node", "initial-version": "0.1.0" },
+    "facts": { "component": "clarify-kit-facts", "release-type": "node", "changelog-path": "CHANGELOG.md", "initial-version": "0.1.0" }
+  }
+}

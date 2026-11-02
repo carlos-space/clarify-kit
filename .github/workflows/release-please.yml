@@ -1,0 +1,88 @@
+name: release-please
+
+# The versioning engine, and it runs only on release trains: main never carries a version commit
+# (template docs/versioning.md). cut-release.sh scopes release-please-config.json to the train's units
+# and, for a unit that walks prerelease stages, puts it in prerelease mode; finalize-release.sh
+# --phase ga takes it back out. Both units of this repository walk alpha then ga (release-policy.json),
+# so a train starts at alpha and its first Release PR carries 0.1.0-alpha.1.
+#
+# The release runs with the built-in GITHUB_TOKEN only. Tags created with GITHUB_TOKEN raise no events,
+# so this workflow dispatches publish.yml itself after the release is created.
+
+on:
+  push:
+    branches:
+      - "release/**"
+      # 合回用的中介分支不是發布分支，不該再跑一次 release-please。
+      # 同一份清單內用 "!" 排除；branches 與 branches-ignore 不能並用。
+      - "!release/**--to-main"
+    # 只有動到發布單元或它自己的設定才需要重算版號。發布分支上還會落下取回工具、
+    # 補設定這類 chore commit，它們不可能改變任何版號，卻各觸發一次平均 130 秒的
+    # 執行（本輪 29 次中約四分之一屬此類）。paths 與 branches 是且的關係。
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "facts/**"
+      - "libs/**"
+      - "release-please-config.json"
+      - ".release-please-manifest.json"
+  # no workflow_dispatch: run by hand on main it would open a version PR against main, breaking
+  # the "main never carries a version commit" invariant
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # train_stage reads the Release-Train-Stage trailer from history; a shallow checkout would not find it
+          fetch-depth: 0
+
+      - id: rp
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target-branch: ${{ github.ref_name }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Summary
+        run: |
+          {
+            echo "### release-please on \`${GITHUB_REF_NAME}\`"
+            echo "- releases_created: ${{ steps.rp.outputs.releases_created }}"
+            echo "- prs_created: ${{ steps.rp.outputs.prs_created }}"
+            echo "- paths_released: ${{ steps.rp.outputs.paths_released }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # 套件單元與 facts 匯總套件 → 每個階段都發布（publish.yml）：alpha、beta、rc 掛在階段名的 npm dist-tag，GA 才進
+      # latest。階段取自發布分支設定（train_stage），隨派送帶給 publish.yml，它再逐單元核對版號屬於這個階段。
+      # tag 不會觸發發布（GITHUB_TOKEN 建的 tag 不發事件），所以由這裡派送。
+      # 本倉庫的單元在 packages/ 下，release-please 回報的路徑是 packages/clarify-kit，facts 匯總套件的路徑是 facts。
+      - name: Dispatch publish for released packages
+        if: steps.rp.outputs.releases_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PATHS: ${{ steps.rp.outputs.paths_released }}
+        run: |
+          pkgs=$(echo "$PATHS" | jq -c '[.[] | select(startswith("packages/") or . == "facts")]')
+          if [[ "$pkgs" == "[]" ]]; then echo "no packages in this release"; exit 0; fi
+          stage="$(bash -c 'source scripts/lib/common.sh && train_stage')"
+          echo "dispatch publish.yml for $pkgs at stage $stage"
+          gh workflow run publish.yml --ref "$GITHUB_REF_NAME" -f paths="$pkgs" -f stage="$stage"

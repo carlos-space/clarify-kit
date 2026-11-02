@@ -1,0 +1,9 @@
+{
+  "$schema": "./schemas/release-policy.schema.json",
+  "product": { "name": "clarify-kit", "members": [] },
+  "access": "public",
+  "units": {
+    "clarify-kit": { "kind": "package", "stages": ["alpha", "ga"] },
+    "clarify-kit-facts": { "kind": "package", "stages": ["alpha", "ga"] }
+  }
+}

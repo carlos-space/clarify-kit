@@ -1,0 +1,80 @@
+name: publish
+
+# 發布入口：把一次發版的套件單元發布到 npmjs（registry.npmjs.org，公開套件）。npm 以階段名作 dist-tag，
+# GA 才是 latest，所以 alpha 不會變成 `npm install` 預設拿到的版本。判斷集中在
+# scripts/release/publish-units.sh，它逐單元核對版號屬於這次的階段，不符就停下。
+#
+# 認證只用 npm Trusted Publishing（OIDC），不放 NPM_TOKEN 這類秘密：job 要有 `id-token: write`，npm 只接受
+# GitHub 託管 runner 簽出的 token，所以 job 跑在 ubuntu-latest。npm 端登記的 workflow 檔名是 publish.yml，
+# 不填 environment。
+#
+# 由 release-please.yml 在發版後直接派送（gh workflow run publish.yml），不做成被 workflow_call 呼叫的
+# workflow：被呼叫的 workflow 簽出的 OIDC token 記的是呼叫端，會和 npm 登記的檔名對不上。
+#
+# dry_run：把上傳改成 `npm publish --dry-run`，用來在不寫 registry 的情況下演練。
+on:
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: 'JSON array of released package paths, e.g. ["packages/clarify-kit","facts"]'
+        required: true
+        type: string
+      stage:
+        description: "release stage of the train; every unit's version must belong to it"
+        required: true
+        type: choice
+        options: [alpha, beta, rc, ga]
+      dry_run:
+        description: "rehearse: run every upload as a dry run"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+# GitHub keeps one pending run per group and a newer one replaces it. The group is per stage, unit
+# set and mode so only a repeat of the same request waits (publish-units.sh skips versions already on the registry).
+concurrency:
+  group: publish-${{ inputs.stage }}-${{ inputs.paths }}-${{ inputs.dry_run }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+        with:
+          registry-url: https://registry.npmjs.org
+          # 發布用的建置不讀其他執行寫進去的 cache
+          cache: "false"
+      - run: pnpm build
+      - name: npm CLI new enough for trusted publishing
+        run: |
+          min=11.5.1
+          if [[ "$(printf '%s\n' "$min" "$(npm --version)" | sort -V | head -1)" != "$min" ]]; then
+            npm install -g "npm@^$min"
+          fi
+          npm --version
+      # Both packages authenticate with the OIDC token, so this step sets no token. A token here would be sent
+      # to registry.npmjs.org by the .npmrc setup-node writes and replace the OIDC exchange.
+      - name: Publish to npm (trusted publishing)
+        env:
+          PATHS: ${{ inputs.paths }}
+          STAGE: ${{ inputs.stage }}
+          PUBLISH_OUT: ${{ runner.temp }}/publish
+          PUBLISH_DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: |
+          mapfile -t paths < <(jq -r '.[]' <<<"$PATHS")
+          bash scripts/release/publish-units.sh "$STAGE" "${paths[@]}"
