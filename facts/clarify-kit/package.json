@@ -1,0 +1,19 @@
+{
+  "name": "clarify-kit-facts.npm",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Facts about clarify-kit. Private workspace package, published through clarify-kit-facts.",
+  "type": "module",
+  "scripts": {
+    "build": "fact-kit build",
+    "test": "fact-kit build && node --test \"test/*.test.ts\""
+  },
+  "devDependencies": {
+    "fact-kit": "^0.11.1",
+    "oxc-parser": "^0.155.0"
+  },
+  "exports": {
+    "./clarify-kit/index.json": "./dist/clarify-kit/index.json",
+    "./clarify-kit/schemas/*": "./dist/clarify-kit/schemas/*"
+  }
+}

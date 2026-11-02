@@ -1,0 +1,8 @@
+packages:
+  - "packages/*"
+  - "facts"
+  - "facts/*"
+
+minimumReleaseAgeExclude:
+  - "*-facts"
+  - fact-kit

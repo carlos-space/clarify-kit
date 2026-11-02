@@ -1,0 +1,146 @@
+name: ci
+
+# Tiered by trigger (template docs/ci.md): a pull request and a push to main or to a train run the same
+# checks, because this repository is one package. A train additionally gates on this run: advance-release.sh
+# and finalize-release.sh --phase ga wait for the ci run of the train's tip.
+#
+# Whether a run checks anything is decided by content, in the scope job (scripts/ci/ci-scope.sh),
+# not by path filters here: every push gets a run, so "the latest ci run" is always the run of the
+# tip, which is what the release gates read. A run whose source is unchanged since the branch's last
+# green run skips its jobs and still concludes success.
+on:
+  pull_request:
+  # 手動派送一律全部執行，用來在不推 commit 的情況下重跑一次
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - "release/**"
+      # 合回分支只用來開回 main 的 PR，PR 那次執行就是它的檢查；push 再跑一次是同一個 SHA
+      - "!release/**--to-main"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # release-please opens its PRs with GITHUB_TOKEN. GitHub deliberately does not run workflows for
+  # those PRs (recursion guard), so they sit as "Action required" forever. Their content is generated
+  # (version bumps + changelog) and CI already ran on the base branch, so skip them explicitly.
+  scope:
+    if: github.event_name != 'pull_request' || !startsWith(github.head_ref, 'release-please--')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read # gh run list: the branch's last successful ci run
+      pull-requests: read # commits/<sha>/pulls: the pull request a push came from
+    outputs:
+      run: ${{ steps.s.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: s
+        run: bash scripts/ci/ci-scope.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          BRANCH: ${{ github.ref_name }}
+          BASE_REF: ${{ github.base_ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REPO: ${{ github.repository }}
+
+  static:
+    needs: scope
+    if: needs.scope.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Type check (src and test)
+        run: pnpm typecheck
+      - name: Release policy matches release-please-config.json
+        run: bash scripts/ci/check-release-policy.sh
+      - name: Shell syntax
+        run: find scripts -name '*.sh' -print0 | xargs -0 -n1 bash -n
+      # bash -n 抓不到：$var 後面直接接中文時，bash 把非 ASCII 位元組讀進變數名，set -u 下執行到才報未綁定。改寫成 ${var}
+      - name: Shell 變數名後不接非 ASCII
+        run: |
+          if grep -rnP --include='*.sh' '\$[A-Za-z_][A-Za-z0-9_]*[^\x00-\x7F]' scripts; then
+            echo "::error::上面幾行的變數後面直接接非 ASCII 字元，改寫成 \${var}"; exit 1
+          fi
+
+  build-test:
+    needs: scope
+    if: needs.scope.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      # tsc is the type check: build fails on a type error
+      - name: Build
+        run: pnpm build
+      - name: Unit tests
+        run: pnpm test
+
+  # The facts packages (facts/) against the code they describe. Three things fail here: a fact-kit rule
+  # (fact-kit check on every facts package; a component package's implDirs makes an implementation that
+  # imports the aggregate fail with impl-imports-facts), a fact whose since is ahead of describes (on a
+  # release branch the version of the open Release PR is passed as --train, and the rows of those components are
+  # pinned in the checkout first), and a component whose built
+  # describes differs from .release-please-manifest.json (a literal version in index.ts instead of describesOf).
+  # Scope decides when it runs, like the other jobs: facts/ and every unit directory count as source.
+  # The job id and the step names are referenced from other repositories' docs; rename them only together.
+  facts:
+    needs: scope
+    if: needs.scope.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read # release-train.sh reads the Release PR branch with git fetch, which needs no pull-requests scope
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      # The facts of a release branch are pinned to the next version before the Release PR merges, while describes
+      # still reads the manifest. A push to a release branch and a pull request into one both read the Release PR of
+      # that release branch. Other branches have no Release PR and set nothing.
+      # The checkout keeps no token, because the later steps build and run code from the pull request. Only this
+      # step hands the read-only token to git, through GIT_CONFIG_* in its own environment, for the git fetch of the
+      # Release PR branch.
+      - name: Train of the open Release PR
+        if: startsWith(github.ref, 'refs/heads/release/') || startsWith(github.base_ref, 'release/')
+        run: |
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="http.${GITHUB_SERVER_URL}/.extraheader"
+          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          export GIT_CONFIG_VALUE_0
+          bash scripts/ci/release-train.sh >> "$GITHUB_ENV"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.base_ref || github.ref_name }}
+      # Pins the next rows of the components in the train, in this checkout only (nothing is committed), the way
+      # merge-release-pr.sh pins them before the Release PR merges. Without it check reports train-next.
+      - name: Pin the train in the checkout
+        if: startsWith(github.ref, 'refs/heads/release/') || startsWith(github.base_ref, 'release/')
+        run: bash scripts/ci/pin-train.sh
+      - name: fact-kit check (every facts package)
+        run: bash scripts/ci/check-facts.sh
+      - name: describes follows the manifest
+        run: bash scripts/ci/check-facts-describes.sh
