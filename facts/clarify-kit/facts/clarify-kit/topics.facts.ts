@@ -1,11 +1,11 @@
-import { specFacts, next } from '../../../_lib/spec.ts'
+import { specFacts, upcoming } from '../../../_lib/spec.ts'
 
-const f = specFacts(['doc-model'], 'topics')
+const f = specFacts(['topics'], 'topics')
 
 export default [
   f.value(
     'format',
-    next('doc-model', {
+    upcoming({
       pattern: '^[a-z0-9-]+:[a-z0-9-]+$',
       examples: ['design:token', 'ddd:entity'],
       sharedWith: 'fact 的 `topics`',

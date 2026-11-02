@@ -1,11 +1,11 @@
-import { specFacts, next } from '../../../_lib/spec.ts'
+import { specFacts, upcoming } from '../../../_lib/spec.ts'
 
-const f = specFacts(['doc-model'], 'modules')
+const f = specFacts(['modules'], 'modules')
 
 export default [
   f.value(
     'register-template',
-    next('doc-model', {
+    upcoming({
       function: 'registerTemplate',
       signature: 'registerTemplate(template: { name: string; type: DocType; sections: { id: string; title: string; required: boolean }[] }): void',
       provides: '段落骨架與必要段落檢查',
@@ -15,7 +15,7 @@ export default [
   ),
   f.value(
     'register-renderer',
-    next('doc-model', {
+    upcoming({
       function: 'registerRenderer',
       signature: 'registerRenderer(name: string, render: (fact: SelectedFact, context: RenderContext) => string): void',
       usedBy: 'fact 渲染區塊的 `renderer` 欄位',
@@ -25,7 +25,7 @@ export default [
   ),
   f.value(
     'scope',
-    next('doc-model', {
+    upcoming({
       provides: ['fact 的 builder 與檢查', '範本', '渲染函式'],
       builderChecks: 'fact 一側的共用寫法放進 fact-kit，用 `registerBuilderCheck` 這類擴充點登記',
       newContent: '新增內容種類（例如設計系統）只加範本與模組，不改核心的類型與區塊',

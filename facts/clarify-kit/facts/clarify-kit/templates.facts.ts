@@ -1,10 +1,10 @@
-import { specFacts, next } from '../../../_lib/spec.ts'
+import { specFacts, upcoming } from '../../../_lib/spec.ts'
 
-const f = specFacts(['doc-model'], 'templates')
+const f = specFacts(['templates'], 'templates')
 
 /** Required section ids in order. The section titles are the author's. */
 const template = (name: string, type: 'doc' | 'record', required: string[], description: string) =>
-  f.value(name, next('doc-model', { name, type, requiredSections: required }), {
+  f.value(name, upcoming({ name, type, requiredSections: required }), {
     title: `${name} 範本`,
     description,
   })
@@ -22,7 +22,7 @@ export default [
   template('release', 'record', ['version', 'changes', 'upgrade-notes'], '發布紀錄：版本、變更、升級注意事項。'),
   f.value(
     'standard-set',
-    next('doc-model', {
+    upcoming({
       doc: ['vision', 'goal', 'problem', 'policy', 'concept', 'guide', 'example'],
       record: ['research', 'retro', 'release'],
       check: '缺任何必要段落時 check 回報 `missing-required-section`',
