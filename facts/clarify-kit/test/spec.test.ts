@@ -18,12 +18,14 @@ const value = (id: string): any => {
 }
 
 describe('rows', () => {
-  it('all start at next and carry no pending label, because the code they describe is in the repository', () => {
+  // A release branch pins `next` to the Release PR's version before it merges, so a row is either still `next` or
+  // pinned to the first release line (0.1.0 or one of its prereleases).
+  it('all start in the first release and carry no pending label, because the code they describe is in the repository', () => {
     assert.ok(index.facts.length > 0)
     for (const fact of index.facts) {
       assert.ok(fact.variants && fact.variants.length > 0, fact.id)
       for (const v of fact.variants) {
-        assert.equal(v.since, 'next', fact.id)
+        assert.match(String(v.since), /^(next|0\.1\.0(-[a-z]+\.\d+)?)$/, fact.id)
         assert.equal(v.pending, undefined, fact.id)
       }
     }
