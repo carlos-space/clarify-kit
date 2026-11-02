@@ -6,7 +6,7 @@ const f = specFacts(['doc-types'], 'doc-types')
 export default [
   f.value(
     'doc',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       kind: 'doc',
       lifecycle: 'living',
       states: { draft: '草稿', active: '生效', deprecated: '棄用' },
@@ -18,7 +18,7 @@ export default [
   ),
   f.value(
     'requirement',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       kind: 'requirement',
       lifecycle: 'living',
       states: { planned: '規劃中', 'in-progress': '進行中', shipped: '已出貨' },
@@ -33,7 +33,7 @@ export default [
   ),
   f.value(
     'decision',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       kind: 'decision',
       lifecycle: 'record',
       states: { proposed: '提案中', accepted: '已採納', rejected: '已否決', superseded: '已取代' },
@@ -49,7 +49,7 @@ export default [
   ),
   f.value(
     'record',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       kind: 'record',
       lifecycle: 'record',
       states: {},
@@ -61,7 +61,7 @@ export default [
   ),
   f.value(
     'content-hash',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       algorithm: 'sha256',
       input: '建置後正規化的內文區塊（key 排序的 JSON）',
       excludes: ['狀態', '版本欄位', 'since', 'pending', 'supersedes', '被取代的關係'],
@@ -77,7 +77,7 @@ export default [
   ),
   f.value(
     'new-type-condition',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       rule: '內容需要一套現有類型都沒有的生命週期、狀態、版本欄位或關係規則時，才新增類型',
       otherwise: '用範本、主題、區塊與模組表示內容種類',
       mapping: { ADR: 'decision', PDR: 'decision', RFC: 'decision', epic: 'requirement', feature: 'requirement', story: 'requirement' },

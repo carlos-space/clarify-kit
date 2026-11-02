@@ -5,7 +5,7 @@ const f = specFacts(['templates'], 'templates')
 
 /** Required section ids in order. The section titles are the author's. */
 const template = (name: string, type: 'doc' | 'record', required: string[], description: string) =>
-  f.value(name, history({ since: 'next', value: { name, type, requiredSections: required } }), {
+  f.value(name, history({ since: '0.1.0-alpha.1', value: { name, type, requiredSections: required } }), {
     title: `${name} 範本`,
     description,
   })
@@ -23,7 +23,7 @@ export default [
   template('release', 'record', ['version', 'changes', 'upgrade-notes'], '發布紀錄：版本、變更、升級注意事項。'),
   f.value(
     'standard-set',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       doc: ['vision', 'goal', 'problem', 'policy', 'concept', 'guide', 'example'],
       record: ['research', 'retro', 'release'],
       check: '缺任何必要段落時 check 回報 `missing-required-section`',
