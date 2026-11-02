@@ -1,6 +1,6 @@
 {
   "name": "clarify-kit",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Turns a discussion into documents that settle it: build the documents, check them against the facts they cite, and adopt decisions and records.",
   "license": "MIT",
   "type": "module",
@@ -30,7 +30,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
-    "test": "fact-kit build --cwd ../../facts/clarify-kit && vitest run"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "fact-kit": "^0.12.0",

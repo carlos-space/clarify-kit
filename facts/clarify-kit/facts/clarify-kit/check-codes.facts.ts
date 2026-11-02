@@ -6,7 +6,7 @@ const f = specFacts(['check'], 'check')
 export default [
   f.value(
     'codes',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       codes: {
         'missing-required-section': '文件缺範本的必要段落',
         'unknown-fact-reference': '區塊引用不存在的 fact',
@@ -30,7 +30,7 @@ export default [
   ),
   f.value(
     'fact-lookup',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       rule: '檢查 fact 引用時，用 fact-kit 的 `loadInstalledIndex` 讀已安裝的 index，再用 `selectFacts` 選 fact，不自己解析 `index.json`',
       why: 'fact 的版本與 pending 選取規則只在 fact-kit 一處實作',
     } }),

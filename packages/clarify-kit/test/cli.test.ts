@@ -1,5 +1,6 @@
 // Runs the CLI as a process (`node src/cli.ts`, Node strips the types), so the exit status is the one a shell sees.
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { afterAll, describe, expect, it } from 'vitest'
 import { CLI, Project, cleanup } from './helpers.ts'
 
@@ -100,7 +101,9 @@ describe('the command line', () => {
   })
   it('exits 0 for --version and --help', () => {
     const p = project('cli-help')
-    expect(cli(p, '--version')).toMatchObject({ status: 0, out: '0.0.0\n' })
+    // release-please bumps the version on a release branch, so compare with the package's own version
+    const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }
+    expect(cli(p, '--version')).toMatchObject({ status: 0, out: `${version}\n` })
     const help = cli(p, '--help')
     expect(help.status).toBe(0)
     expect(help.out).toContain('clarify-kit <command>')

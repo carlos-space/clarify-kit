@@ -6,7 +6,7 @@ const f = specFacts(['modules'], 'modules')
 export default [
   f.value(
     'register-template',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       function: 'registerTemplate',
       signature: 'registerTemplate(template: { name: string; type: DocType; sections: { id: string; title: string; required: boolean }[] }): void',
       provides: '段落骨架與必要段落檢查',
@@ -16,7 +16,7 @@ export default [
   ),
   f.value(
     'register-renderer',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       function: 'registerRenderer',
       signature: 'registerRenderer(name: string, render: (fact: SelectedFact, context: RenderContext) => string): void',
       usedBy: 'fact 渲染區塊的 `renderer` 欄位',
@@ -26,7 +26,7 @@ export default [
   ),
   f.value(
     'render-context',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       type: 'RenderContext',
       fields: {
         version: '讀者執行的版本，或 `head`；與渲染挑 fact 時用的 `version` 相同',
@@ -41,7 +41,7 @@ export default [
   ),
   f.value(
     'scope',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       provides: ['fact 的 builder 與檢查', '範本', '渲染函式'],
       builderChecks: 'fact 一側的共用寫法放進 fact-kit，用 `registerBuilderCheck` 這類擴充點登記',
       newContent: '新增內容種類（例如設計系統）只加範本與模組，不改核心的類型與區塊',

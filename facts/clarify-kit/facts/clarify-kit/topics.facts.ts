@@ -6,7 +6,7 @@ const f = specFacts(['topics'], 'topics')
 export default [
   f.value(
     'format',
-    history({ since: 'next', value: {
+    history({ since: '0.1.0-alpha.1', value: {
       pattern: '^[a-z0-9-]+:[a-z0-9-]+$',
       examples: ['design:token', 'ddd:entity'],
       sharedWith: 'fact 的 `topics`',
