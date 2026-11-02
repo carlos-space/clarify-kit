@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.1.0-alpha.1...clarify-kit/v0.1.0) (2026-11-02)
+
+
+### chore
+
+* **release/v0.1:** clarify-kit 0.1.0 ([0389fd4](https://github.com/carlos-space/clarify-kit/commit/0389fd488f5dba60c298c0c02e63a7a67a7ea14c))
+
 ## 0.1.0-alpha.1 (2026-11-02)
 
 
