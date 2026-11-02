@@ -1,0 +1,4 @@
+{
+  "implDirs": ["../../packages/clarify-kit/src"],
+  "testDirs": ["test"]
+}

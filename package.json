@@ -1,0 +1,14 @@
+{
+  "name": "clarify-kit-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Workspace root of clarify-kit. The package itself will live in packages/clarify-kit.",
+  "packageManager": "pnpm@12.3.4",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "clarify-kit-facts",
+  "version": "0.0.0",
+  "description": "Facts for clarify-kit: the document types, blocks, templates, CLI, index format and read API",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlos-space/clarify-kit.git",
+    "directory": "facts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "fact-kit build"
+  },
+  "devDependencies": {
+    "clarify-kit-facts.npm": "workspace:*",
+    "fact-kit": "^0.11.1",
+    "oxc-parser": "^0.155.0"
+  },
+  "exports": {
+    "./clarify-kit/index.json": "./dist/clarify-kit/index.json",
+    "./clarify-kit/schemas/*": "./dist/clarify-kit/schemas/*"
+  }
+}
