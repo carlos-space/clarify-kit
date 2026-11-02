@@ -33,16 +33,23 @@
     "test": "fact-kit build --cwd ../../facts/clarify-kit && vitest run"
   },
   "peerDependencies": {
-    "fact-kit": "^0.12.0"
+    "fact-kit": "^0.12.0",
+    "oxc-parser": "^0.155.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.4",
     "fact-kit": "^0.12.0",
+    "oxc-parser": "^0.155.0",
     "typescript": "7.1.0-beta",
     "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=24.0.0"
   },
-  "packageManager": "pnpm@12.3.4"
+  "packageManager": "pnpm@12.3.4",
+  "peerDependenciesMeta": {
+    "oxc-parser": {
+      "optional": true
+    }
+  }
 }

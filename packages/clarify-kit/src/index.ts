@@ -31,7 +31,21 @@ export type {
   RequirementStatus,
   Section,
 } from './docs.ts'
-export { DocModelError } from './errors.ts'
+export { DocModelError, InputError } from './errors.ts'
+export { AdoptError, adoptFile } from './adopt.ts'
+export type { AdoptResult } from './adopt.ts'
+export { FORMAT_VERSION, buildIndex, buildProject, readPackageName } from './build.ts'
+export type { BuildResult, DocsIndex } from './build.ts'
+export { checkProject, knownFactIds } from './check.ts'
+export { CONFIG_FILE, CONFIG_KEYS, readConfig } from './config.ts'
+export type { Config } from './config.ts'
+export { defineDocs, entryOf } from './entry.ts'
+export type { DocsEntry, PublishInfo } from './entry.ts'
+export { bodyOf, contentHashOf } from './hash.ts'
+export { DOC_FILE, PROBLEM_CODES, loadModules, loadProject } from './load.ts'
+export type { LoadedDocument, LoadedEntry, Problem, ProblemCode, Project } from './load.ts'
+export { USAGE, run } from './run.ts'
+export type { Io } from './run.ts'
 export { TOPIC_PATTERN, isTopic, topic } from './topics.ts'
 export {
   STANDARD_TEMPLATES,
@@ -64,4 +78,4 @@ export function version(): string {
   return pkg.version
 }
 
-export const usage = 'usage: clarify-kit --version | --help'
+export const usage = 'usage: clarify-kit build | check | adopt <file> | --version | --help'

@@ -1,0 +1,9 @@
+{
+  "name": "acme-facts-2x",
+  "version": "2.1.0",
+  "description": "A facts package built by fact-kit 0.12: index format 2.0, rows with since, next and pending.",
+  "type": "module",
+  "exports": {
+    "./acme/index.json": "./acme/index.json"
+  }
+}
