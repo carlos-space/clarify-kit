@@ -22,14 +22,14 @@ const value = (id: string): any => {
 
 describe('rows', () => {
   // A release branch pins `next` to the Release PR's version before it merges, so a row is either still `next` or
-  // pinned to the first version of a release line (X.Y.0 or one of its prereleases). Any line is accepted, so a new
-  // release line does not need this pattern changed.
-  it('all start in the first release and carry no pending label, because the code they describe is in the repository', () => {
+  // pinned to a released version (X.Y.Z or one of its prereleases). A maintenance release pins the rows it adds to its
+  // patch version, and any line is accepted, so a new release does not need this pattern changed.
+  it('are all pinned by a release or still next and carry no pending label, because the code they describe is in the repository', () => {
     assert.ok(index.facts.length > 0)
     for (const fact of index.facts) {
       assert.ok(fact.variants && fact.variants.length > 0, fact.id)
       for (const v of fact.variants) {
-        assert.match(String(v.since), /^(next|\d+\.\d+\.0(-[a-z]+\.\d+)?)$/, fact.id)
+        assert.match(String(v.since), /^(next|\d+\.\d+\.\d+(-[a-z]+\.\d+)?)$/, fact.id)
         assert.equal(v.pending, undefined, fact.id)
       }
     }
