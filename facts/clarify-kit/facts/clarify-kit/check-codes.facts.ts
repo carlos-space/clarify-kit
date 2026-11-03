@@ -6,26 +6,32 @@ const f = specFacts(['check'], 'check')
 export default [
   f.value(
     'codes',
-    history({ since: '0.1.0-alpha.1', value: {
-      codes: {
-        'missing-required-section': '文件缺範本的必要段落',
-        'unknown-fact-reference': '區塊引用不存在的 fact',
-        'adopted-content-changed': '已採納的 decision 或寫完的 record 內文與雜湊不同',
-        'supersedes-unknown': '`supersedes` 指向不存在的 decision',
-        'scenario-without-fact': 'requirement 的驗收情境沒有引用 fact',
-        'outside-entry': '`*.doc.ts` 不在任何 entry 底下',
-        'load-error': '`index.ts` 或 `*.doc.ts` 載入失敗，或預設匯出不是文件',
-        'duplicate-document-id': '同一個 entry 內有兩份文件的 `id` 相同',
-      },
-      scope: {
-        'supersedes-unknown': '`supersedes` 只在同一個 entry 的 decision 之間解析',
-        'unknown-fact-reference': '到設定檔 `factSources` 列的 facts 套件找，找法見 `clarify-kit.check.fact-lookup`，pending 列也算存在',
-        'adopted-content-changed': '文件帶 `contentHash` 就比對，不看狀態',
-      },
-      stable: '`code` 穩定，訊息給人看',
-      output: '每筆問題含 `code`、`message` 與 `location`',
-      exit: '有任何問題時結束碼為 1',
-    } }),
+    history(
+      { since: '0.1.0-alpha.1', value: {
+        codes: {
+          'missing-required-section': '文件缺範本的必要段落',
+          'unknown-fact-reference': '區塊引用不存在的 fact',
+          'adopted-content-changed': '已採納的 decision 或寫完的 record 內文與雜湊不同',
+          'supersedes-unknown': '`supersedes` 指向不存在的 decision',
+          'scenario-without-fact': 'requirement 的驗收情境沒有引用 fact',
+          'outside-entry': '`*.doc.ts` 不在任何 entry 底下',
+          'load-error': '`index.ts` 或 `*.doc.ts` 載入失敗，或預設匯出不是文件',
+          'duplicate-document-id': '同一個 entry 內有兩份文件的 `id` 相同',
+        },
+        scope: {
+          'supersedes-unknown': '`supersedes` 只在同一個 entry 的 decision 之間解析',
+          'unknown-fact-reference': '到設定檔 `factSources` 列的 facts 套件找，找法見 `clarify-kit.check.fact-lookup`，pending 列也算存在',
+          'adopted-content-changed': '文件帶 `contentHash` 就比對，不看狀態',
+        },
+        stable: '`code` 穩定，訊息給人看',
+        output: '每筆問題含 `code`、`message` 與 `location`',
+        exit: '有任何問題時結束碼為 1',
+      } },
+      { since: 'next', remove: {
+        '/codes': ['adopted-content-changed'],
+        '/scope': ['adopted-content-changed'],
+      } },
+    ),
     { title: 'check 錯誤碼', description: 'check 回報問題用的穩定錯誤碼，至少六個。' },
   ),
   f.value(

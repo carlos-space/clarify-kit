@@ -10,6 +10,9 @@ const index = JSON.parse(
   readFileSync(new URL('../dist/clarify-kit/index.json', import.meta.url), 'utf8'),
 ) as FactIndex
 
+// Retired in next: a head reader no longer gets them, a 0.1.0 reader still does.
+const retired = ['clarify-kit.cli.adopt', 'clarify-kit.doc-types.content-hash']
+
 const all = new Map(selectFacts(index, { version: 'head' }).map((f) => [f.id, f]))
 const value = (id: string): any => {
   const f = all.get(`clarify-kit.${id}`)
@@ -31,7 +34,9 @@ describe('rows', () => {
     }
   })
   it('are all read by a reader on head that includes no label', () => {
-    assert.equal(all.size, index.facts.length)
+    // content-hash and adopt are retired in next, so a head reader no longer gets them
+    assert.equal(all.size, index.facts.length - retired.length)
+    for (const id of retired) assert.ok(!all.has(id), id)
   })
 })
 
@@ -54,14 +59,17 @@ describe('doc types', () => {
     assert.ok(value('doc-types.requirement').specificRules.some((r: string) => r.includes('scenario-without-fact')))
     const dec = value('doc-types.decision').specificRules.join('\n')
     assert.match(dec, /supersedes/)
-    assert.match(dec, /採納後內文不改/)
-    assert.match(value('doc-types.record').specificRules.join('\n'), /寫完不改/)
+    assert.match(dec, /accepted-content-frozen: 採納後內文不改，由 PR 審查把關/)
+    assert.doesNotMatch(dec, /雜湊/)
+    const rec = value('doc-types.record').specificRules.join('\n')
+    assert.match(rec, /written-once: 寫完不改，由 PR 審查把關/)
+    assert.doesNotMatch(rec, /雜湊/)
   })
-  it('hash the body only, for decision and record', () => {
-    const hash = value('doc-types.content-hash')
-    assert.deepEqual(hash.appliesTo, ['decision', 'record'])
-    assert.deepEqual(hash.excludes, ['狀態', '版本欄位', 'since', 'pending', 'supersedes', '被取代的關係'])
-    assert.equal(hash.writtenBy, 'adopt')
+  it('retire adopt and the content hash in next, and still give them to a 0.1.0 reader', () => {
+    for (const id of retired) {
+      assert.ok(!all.has(id), id)
+      assert.ok(selectFacts(index, { version: '0.1.0' }).some((x) => x.id === id), id)
+    }
   })
 })
 
@@ -108,8 +116,8 @@ describe('blocks, topics, templates and modules', () => {
 })
 
 describe('CLI, config, entry rule, index format and check codes', () => {
-  it('list the five commands', () => {
-    assert.deepEqual(value('cli.commands').commands, ['build', 'check', 'pin', 'render', 'adopt'])
+  it('list the four commands', () => {
+    assert.deepEqual(value('cli.commands').commands, ['build', 'check', 'pin', 'render'])
     for (const name of value('cli.commands').commands) assert.ok(all.has(`clarify-kit.cli.${name}`), name)
   })
   it('collect *.doc.ts by the entry rule', () => {
@@ -154,18 +162,18 @@ describe('CLI, config, entry rule, index format and check codes', () => {
     for (const code of [
       'missing-required-section',
       'unknown-fact-reference',
-      'adopted-content-changed',
       'supersedes-unknown',
       'scenario-without-fact',
       'outside-entry',
     ]) {
       assert.ok(codes.includes(code), code)
     }
+    assert.ok(!codes.includes('adopted-content-changed'))
+    assert.ok(!('adopted-content-changed' in value('check.codes').scope))
     assert.ok(codes.length >= 6)
-    assert.deepEqual(codes.slice(0, 6), [
+    assert.deepEqual(codes.slice(0, 5), [
       'missing-required-section',
       'unknown-fact-reference',
-      'adopted-content-changed',
       'supersedes-unknown',
       'scenario-without-fact',
       'outside-entry',
@@ -196,10 +204,10 @@ describe('pin, render, read and impact', () => {
     assert.match(installed.thenChecks.join('\n'), /major 是 1/)
     assert.match(installed.thenChecks.join('\n'), /`docs`/)
   })
-  it('pin leaves a pending row alone and the hash leaves out since and pending', () => {
-    assert.match(value('cli.pin').keeps, /帶 `pending`.*不動/)
-    assert.match(value('cli.pin').keeps, /雜湊排除 `since` 與 `pending`/)
-    assert.ok(value('doc-types.content-hash').excludes.includes('pending'))
+  it('pin leaves a pending row alone', () => {
+    const keeps = value('cli.pin').keeps
+    assert.match(keeps, /帶 `pending`.*不動/)
+    assert.doesNotMatch(keeps, /雜湊/)
   })
   it('give a renderer the version, the include labels and the place of the block', () => {
     const context = value('modules.render-context')

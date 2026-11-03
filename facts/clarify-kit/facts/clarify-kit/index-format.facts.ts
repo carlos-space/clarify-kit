@@ -35,27 +35,30 @@ export default [
   ),
   f.value(
     'doc-fields',
-    history({ since: '0.1.0-alpha.1', value: {
-      required: ['id', 'type', 'title', 'topics', 'sections', 'factRefs'],
-      optional: ['template', 'pending'],
-      meaning: {
-        id: '文件 id，同一個 entry 內不重複，`supersedes` 指向它',
-        type: '`doc`、`requirement`、`decision` 或 `record`',
-        title: '標題',
-        topics: '主題，格式同 fact 的 `topics`，可為空陣列',
-        sections: '內文，每段含 `id`、`title` 與 `blocks`',
-        factRefs: '內文引用的 fact id，依第一次出現的順序排列，各一次',
-        template: '寫成這份文件所用的範本名稱，沒用範本時不寫',
-        pending: '只有帶這個標籤的讀取端看得到這份文件，沒標時不寫',
-      },
-      byType: {
-        doc: { required: ['status'], optional: ['since'] },
-        requirement: { required: ['status', 'release'], optional: [] },
-        decision: { required: ['status', 'appliesFrom', 'supersedes'], optional: ['contentHash'] },
-        record: { required: ['date'], optional: ['contentHash'] },
-      },
-      noOtherFields: true,
-    } }),
+    history(
+      { since: '0.1.0-alpha.1', value: {
+        required: ['id', 'type', 'title', 'topics', 'sections', 'factRefs'],
+        optional: ['template', 'pending'],
+        meaning: {
+          id: '文件 id，同一個 entry 內不重複，`supersedes` 指向它',
+          type: '`doc`、`requirement`、`decision` 或 `record`',
+          title: '標題',
+          topics: '主題，格式同 fact 的 `topics`，可為空陣列',
+          sections: '內文，每段含 `id`、`title` 與 `blocks`',
+          factRefs: '內文引用的 fact id，依第一次出現的順序排列，各一次',
+          template: '寫成這份文件所用的範本名稱，沒用範本時不寫',
+          pending: '只有帶這個標籤的讀取端看得到這份文件，沒標時不寫',
+        },
+        byType: {
+          doc: { required: ['status'], optional: ['since'] },
+          requirement: { required: ['status', 'release'], optional: [] },
+          decision: { required: ['status', 'appliesFrom', 'supersedes'], optional: ['contentHash'] },
+          record: { required: ['date'], optional: ['contentHash'] },
+        },
+        noOtherFields: true,
+      } },
+      { since: 'next', replace: { '/byType/decision/optional': [], '/byType/record/optional': [] } },
+    ),
     { title: 'docs index 裡文件的欄位', description: '`docs` 陣列的每份文件都有 `id`、`type`、`title`、`topics`、`sections` 與 `factRefs`，用了範本才有 `template`，再加各類型自己的欄位。' },
   ),
   f.value(
