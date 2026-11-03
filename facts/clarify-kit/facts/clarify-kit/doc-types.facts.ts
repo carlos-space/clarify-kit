@@ -46,7 +46,7 @@ export default [
         ],
         covers: ['ADR', 'PDR', '組織決策', 'RFC'],
       } },
-      { since: 'next', replace: { '/specificRules': [
+      { since: '0.2.0-alpha.1', replace: { '/specificRules': [
         'supersedes: 用 `supersedes` 指向被取代的 decision，被取代的那份狀態改為已取代',
         'accepted-content-frozen: 採納後內文不改，由 PR 審查把關',
       ] } },
@@ -64,7 +64,7 @@ export default [
         versionRule: '日期（`YYYY-MM-DD`）',
         specificRules: ['written-once: 寫完不改，寫入雜湊的那一刻就是寫完'],
       } },
-      { since: 'next', replace: { '/specificRules': ['written-once: 寫完不改，由 PR 審查把關'] } },
+      { since: '0.2.0-alpha.1', replace: { '/specificRules': ['written-once: 寫完不改，由 PR 審查把關'] } },
     ),
     { title: 'record 類型', description: '紀錄。沒有狀態欄，版本欄位是日期，寫完不改。' },
   ),
@@ -82,7 +82,7 @@ export default [
     {
       title: '採納後內文的雜湊規則',
       description: '採納時把內文雜湊寫進源碼。雜湊只算內文區塊，不含狀態、版本欄位、`since`、`pending`、`supersedes` 與被取代的關係。`since` 與 `pending` 都是發布標記，不是內文，所以 pin、拿掉 `pending` 標籤與取代不會被當成改內文。record 用同一套雜湊。',
-      when: { deprecatedIn: 'next', removeIn: 'next' },
+      when: { deprecatedIn: '0.2.0-alpha.1', removeIn: '0.2.0-alpha.1' },
     },
   ),
   f.value(
