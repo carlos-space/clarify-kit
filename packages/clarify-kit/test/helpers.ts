@@ -37,11 +37,29 @@ export class Project {
     return this.write('clarify-kit.config.json', JSON.stringify({ docsDir: 'docs', ...settings }))
   }
   /** An `index.ts` that makes `docs/<entry>` an entry. */
-  entry(entry = 'main', describes: Record<string, string> = { acme: '1.0.0' }): this {
+  entry(entry = 'main', describes: Record<string, string> = { acme: '1.0.0' }, layer: string | null = 'implementation'): this {
+    const declared = layer === null ? '' : `layer: '${layer}', `
     return this.write(
       `docs/${entry}/index.ts`,
-      `import { defineDocs } from '${SRC}'\nexport default defineDocs({ describes: ${JSON.stringify(describes)}, publish: { target: 'npm', name: 'acme-docs' } })\n`,
+      `import { defineDocs } from '${SRC}'\nexport default defineDocs({ ${declared}describes: ${JSON.stringify(describes)}, publish: { target: 'npm', name: 'acme-docs' } })\n`,
     )
+  }
+  /**
+   * Installs a facts package `name` with the entry `acme`, in index format 2.1 with the `layer`, or format 2.0 when
+   * there is none. It has one fact for each of `ids`.
+   */
+  factsPackage(name: string, ids: string[], layer?: string): this {
+    this.write(`node_modules/${name}/package.json`, JSON.stringify({ name, version: '1.0.0', exports: { './acme/index.json': './acme/index.json' } }))
+    const facts = ids.map((id) => ({ id, tool: id.split('.')[0], topics: ['t:x'], title: id, content: { value: 1 }, variants: [{ since: '1.0.0', content: { value: 1 } }], source: { kind: 'published' } }))
+    const head = layer === undefined ? { indexFormat: '2.0', formatVersion: '2.0' } : { indexFormat: '2.1', formatVersion: '2.1', layer }
+    return this.write(`node_modules/${name}/acme/index.json`, JSON.stringify({ ...head, package: name, entry: 'acme', describes: { acme: '1.0.0' }, publish: { target: 'npm', name }, facts }))
+  }
+  /** Installs a docs package `name` with the entry `main`, in index format 1.1 with the `layer`, or 1.0 when there is none, holding a document for each of `ids`. */
+  docsPackage(name: string, ids: string[], layer?: string): this {
+    this.write(`node_modules/${name}/package.json`, JSON.stringify({ name, version: '1.0.0', exports: { './main/index.json': './main/index.json' } }))
+    const docs = ids.map((id) => ({ id, type: 'doc', title: id, topics: [], sections: [], factRefs: [], docRefs: [], status: 'active' }))
+    const head = layer === undefined ? { formatVersion: '1.0', package: name, entry: 'main' } : { formatVersion: '1.1', package: name, entry: 'main', layer }
+    return this.write(`node_modules/${name}/main/index.json`, JSON.stringify({ ...head, describes: { acme: '1.0.0' }, publish: { target: 'npm', name }, docs }))
   }
   /** Writes a `.doc.ts` that imports the names it needs from the package and default-exports `body`. */
   doc(rel: string, imports: string, body: string): this {

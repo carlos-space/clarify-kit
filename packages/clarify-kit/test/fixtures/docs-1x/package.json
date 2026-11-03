@@ -1,0 +1,9 @@
+{
+  "name": "acme-docs-1x",
+  "version": "0.2.0",
+  "description": "A docs package built by clarify-kit 0.2.0: index format 1.0, no layer and no docRefs.",
+  "type": "module",
+  "exports": {
+    "./main/index.json": "./main/index.json"
+  }
+}

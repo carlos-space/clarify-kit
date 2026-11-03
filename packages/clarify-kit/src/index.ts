@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 
-export { BLOCK_FIELDS, BLOCK_KINDS, asset, code, factBlock, factRefsOf, isBlock, list, scenario, table, text } from './blocks.ts'
+export { BLOCK_FIELDS, BLOCK_KINDS, asset, code, docRefsOf, factBlock, factRefsOf, isBlock, list, scenario, table, text } from './blocks.ts'
 export type {
   AssetBlock,
   Block,
@@ -37,8 +37,8 @@ export type { BuildResult, DocsIndex } from './build.ts'
 export { checkProject, knownFactIds } from './check.ts'
 export { CONFIG_FILE, CONFIG_KEYS, readConfig } from './config.ts'
 export type { Config } from './config.ts'
-export { defineDocs, entryOf } from './entry.ts'
-export type { DocsEntry, PublishInfo } from './entry.ts'
+export { LAYERS, defineDocs, entryOf, isLayer } from './entry.ts'
+export type { DocsEntry, Layer, ParsedEntry, PublishInfo } from './entry.ts'
 export { DOC_FILE, PROBLEM_CODES, loadModules, loadProject } from './load.ts'
 export type { LoadedDocument, LoadedEntry, Problem, ProblemCode, Project } from './load.ts'
 export { DOC_DATA_KEYS, pinDocs } from './pin.ts'

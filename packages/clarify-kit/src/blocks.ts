@@ -183,3 +183,12 @@ export function factRefsOf(block: Block): string[] {
       return []
   }
 }
+
+/** `doc:<target>#<id>`: the target is an entry name or a `<package>/<entry>`, the id a document id. */
+const INLINE_DOC = /(?<![A-Za-z0-9_-])doc:([A-Za-z0-9@_][A-Za-z0-9@_./-]*)#([a-z0-9]+(?:-[a-z0-9]+)*)/g
+
+/** The `<target>#<id>` of the documents a block cites: the `doc:<target>#<id>` of a text block. */
+export function docRefsOf(block: Block): string[] {
+  if (block.kind !== 'text') return []
+  return [...block.text.matchAll(INLINE_DOC)].map((m) => `${m[1]}#${m[2]}`)
+}

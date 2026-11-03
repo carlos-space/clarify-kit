@@ -9,7 +9,7 @@ import type { Config } from './config.ts'
 import { isDocument } from './docs.ts'
 import type { Document } from './docs.ts'
 import { entryOf } from './entry.ts'
-import type { DocsEntry } from './entry.ts'
+import type { ParsedEntry } from './entry.ts'
 import { InputError } from './errors.ts'
 
 export const DOC_FILE = '.doc.ts'
@@ -23,6 +23,10 @@ export const PROBLEM_CODES = [
   'outside-entry',
   'load-error',
   'duplicate-document-id',
+  'cites-lower-layer',
+  'undeclared-layer',
+  'unknown-doc-reference',
+  'layer-mismatch',
 ] as const
 export type ProblemCode = (typeof PROBLEM_CODES)[number]
 
@@ -47,8 +51,8 @@ export interface LoadedEntry {
   /** Path of the entry directory relative to `docsDir`, written with `/`. */
   name: string
   dir: string
-  /** The `describes` and `publish` of the `index.ts`; undefined when it could not be loaded. */
-  entry: DocsEntry | undefined
+  /** The `layer`, `describes` and `publish` of the `index.ts`; undefined when it could not be loaded. */
+  entry: ParsedEntry | undefined
   documents: LoadedDocument[]
 }
 
@@ -127,11 +131,18 @@ export async function loadProject(config: Config): Promise<Project> {
 
   for (const dir of scanned.entryDirs) {
     const file = join(dir, 'index.ts')
-    let entry: DocsEntry | undefined
+    let entry: ParsedEntry | undefined
     try {
       entry = entryOf((await importSource(file)).default, 'index.ts default export')
     } catch (error) {
       failed(file, error)
+    }
+    if (entry !== undefined && entry.layer === undefined) {
+      problems.push({
+        code: 'undeclared-layer',
+        message: `entry "${posix(relative(config.docsDir, dir))}" declares no layer: defineDocs needs a "layer" of "org", "product", "implementation" or "tool"`,
+        location: where(file),
+      })
     }
     const owned = scanned.files
       .filter((f) => f.entryDir === dir)

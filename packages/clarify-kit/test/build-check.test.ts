@@ -29,7 +29,7 @@ describe('the entry rule', () => {
     const [main, ...others] = await entries(p)
     expect(others).toEqual([])
     expect(main?.name).toBe('main')
-    expect(main?.entry).toEqual({ describes: { acme: '1.0.0' }, publish: { target: 'npm', name: 'acme-docs' } })
+    expect(main?.entry).toEqual({ layer: 'implementation', describes: { acme: '1.0.0' }, publish: { target: 'npm', name: 'acme-docs' } })
     expect(ids(main!)).toEqual(['a', 'b', 'in-b', 'in-z'])
     expect(main?.documents.map((d) => d.location)).toEqual(['docs/main/a.doc.ts', 'docs/main/b.doc.ts', 'docs/main/b/x.doc.ts', 'docs/main/z/c.doc.ts'])
     expect(ids((await entries(p))[0]!)).toEqual(ids(main!))
@@ -91,7 +91,7 @@ describe('the entry rule', () => {
 })
 
 describe('build', () => {
-  it('writes every sample of the four types and ten templates, with the six top-level fields', async () => {
+  it('writes every sample of the four types and ten templates, with the seven top-level fields', async () => {
     const p = new Project('build-samples').config().entry('main', { 'clarify-kit': '0.0.0' }).samples()
     const result = await buildProject(readConfig(undefined, p.dir))
     expect(result.ok).toBe(true)
@@ -99,8 +99,9 @@ describe('build', () => {
     expect(result.written).toEqual([p.path('dist/main/index.json')])
 
     const index = p.json('dist/main/index.json')
-    expect(Object.keys(index)).toEqual(['formatVersion', 'package', 'entry', 'describes', 'publish', 'docs'])
-    expect(index.formatVersion).toBe('1.0')
+    expect(Object.keys(index)).toEqual(['formatVersion', 'package', 'entry', 'layer', 'describes', 'publish', 'docs'])
+    expect(index.formatVersion).toBe('1.1')
+    expect(index.layer).toBe('implementation')
     expect(index.package).toBe('acme-docs')
     expect(index.entry).toBe('main')
     expect(index.describes).toEqual({ 'clarify-kit': '0.0.0' })
@@ -175,7 +176,7 @@ describe('check against the counterexamples', () => {
 
   it('reports a cited fact that no facts package has, however it is cited', async () => {
     const p = clean(new Project('unknown-fact')).install('facts-2x')
-    p.config({ factSources: ['acme-facts-2x/acme'] })
+    p.config({ factSources: [{ source: 'acme-facts-2x/acme', layer: 'implementation' }] })
     p.doc('docs/main/u.doc.ts', 'doc, section, text, factBlock', `doc({ id: 'u', title: 'U', status: 'draft', sections: [
       section('s', 'S', [factBlock({ facts: ['acme.buttons.radius', 'acme.nope.one'] }), text('and fact:acme.nope.two')])] })`)
     const problems = await check(p)
@@ -204,7 +205,7 @@ describe('check against the counterexamples', () => {
 
   it('reports a scenario of a requirement that cites no fact, and not one that does', async () => {
     const p = clean(new Project('scenario')).install('facts-2x')
-    p.config({ factSources: ['acme-facts-2x/acme'] })
+    p.config({ factSources: [{ source: 'acme-facts-2x/acme', layer: 'implementation' }] })
     p.doc('docs/main/r.doc.ts', 'requirement, section, scenario', `requirement({ id: 'r', title: 'R', status: 'planned', sections: [section('acceptance', 'Acceptance', [
       scenario({ scenario: 'S', expected: 'E', judgement: 'J', facts: 'acme.buttons.radius' }),
       scenario({ scenario: 'S2', expected: 'E', judgement: 'J' })])] })`)
@@ -273,7 +274,7 @@ describe('the facts a document cites are read through fact-kit', () => {
     ['facts-2x', 'acme-facts-2x/acme', ['acme.buttons.radius', 'acme.buttons.shadow']],
   ] as const) {
     it(`passes a document that cites facts of the ${fixture} index, and reports one they do not have`, async () => {
-      const p = new Project(`facts-${fixture}`).config({ factSources: [source] }).entry().install(fixture)
+      const p = new Project(`facts-${fixture}`).config({ factSources: [{ source, layer: 'implementation' }] }).entry().install(fixture)
       p.doc('docs/main/c.doc.ts', 'doc, section, factBlock', `doc({ id: 'c', title: 'C', status: 'draft', sections: [section('s', 'S', [factBlock({ facts: ${JSON.stringify(ids)} })])] })`)
       expect(await check(p)).toEqual([])
       p.doc('docs/main/c.doc.ts', 'doc, section, factBlock', cites('acme.other.thing'))
@@ -283,7 +284,7 @@ describe('the facts a document cites are read through fact-kit', () => {
 
   it('reads all three index formats in one project', async () => {
     const p = new Project('facts-both')
-      .config({ factSources: ['acme-facts-1x/acme', 'acme-facts-1x2/acme', 'acme-facts-2x/acme'] })
+      .config({ factSources: ['acme-facts-1x/acme', 'acme-facts-1x2/acme', 'acme-facts-2x/acme'].map((source) => ({ source, layer: 'implementation' })) })
       .entry().install('facts-1x').install('facts-1x2').install('facts-2x')
     p.doc('docs/main/c.doc.ts', 'doc, section, factBlock', `doc({ id: 'c', title: 'C', status: 'draft', sections: [section('s', 'S', [factBlock({ facts: ['acme.tokens.spacing', 'acme.layout.gutter', 'acme.buttons.shadow'] })])] })`)
     expect(await check(p)).toEqual([])

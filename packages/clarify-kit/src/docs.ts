@@ -2,7 +2,7 @@
 // not a kind of content: the kind of content is the template, the topics and the blocks.
 import type { Since } from 'fact-kit'
 import { setMark } from 'fact-kit'
-import { factRefsOf, isBlock } from './blocks.ts'
+import { docRefsOf, factRefsOf, isBlock } from './blocks.ts'
 import type { Block, Versioned } from './blocks.ts'
 import { DocModelError } from './errors.ts'
 import { topicsOf } from './topics.ts'
@@ -106,6 +106,8 @@ interface Built {
   pending?: string
   /** Ids of every fact the body cites, each once, in the order they first appear. */
   factRefs: string[]
+  /** `<target>#<id>` of every document the body cites with `doc:<target>#<id>`, each once, in the order they first appear. */
+  docRefs: string[]
 }
 export type DocDocument = Built & { type: 'doc'; status: DocStatus; since?: Since }
 export type RequirementDocument = Built & { type: 'requirement'; status: RequirementStatus; release: string | null }
@@ -146,6 +148,7 @@ function built(input: Record<string, unknown>, type: DocType, template: string |
     topics: topicsOf(input.topics, `${type} "${id}" topics`),
     sections,
     factRefs: [...new Set(sections.flatMap((s) => s.blocks.flatMap(factRefsOf)))],
+    docRefs: [...new Set(sections.flatMap((s) => s.blocks.flatMap(docRefsOf)))],
   }
   if (template !== undefined) out.template = template
   if (input.pending !== undefined) out.pending = pendingOf(input.pending, `${type} "${id}" pending`)
