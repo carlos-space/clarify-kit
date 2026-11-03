@@ -18,7 +18,6 @@ export const DOC_FILE = '.doc.ts'
 export const PROBLEM_CODES = [
   'missing-required-section',
   'unknown-fact-reference',
-  'adopted-content-changed',
   'supersedes-unknown',
   'scenario-without-fact',
   'outside-entry',

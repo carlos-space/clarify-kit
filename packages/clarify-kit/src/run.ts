@@ -3,7 +3,6 @@
 import { readFileSync } from 'node:fs'
 import { relative, resolve, sep } from 'node:path'
 import { parseArgs } from 'node:util'
-import { AdoptError, adoptFile } from './adopt.ts'
 import { buildProject } from './build.ts'
 import { checkProject } from './check.ts'
 import { readConfig } from './config.ts'
@@ -20,7 +19,6 @@ commands:
   pin    --version <v> [--config <file>]    turn the "next" in the "since" of documents and blocks into <v>
   render [--out <dir>] [--version <v>] [--include <label>...] [--config <file>]
                                             write the documents as Markdown outside every git work tree
-  adopt  <file> [--config <file>]           set a decision to accepted and write the content hash of a decision or record
   --version, --help
 
 exit status: 0 done, 1 problems found or refused, 2 wrong usage or an input that can not be read`
@@ -48,7 +46,7 @@ export async function run(argv: string[], io: Io): Promise<number> {
     io.out(version())
     return 0
   }
-  if (!['build', 'check', 'pin', 'render', 'adopt'].includes(command)) {
+  if (!['build', 'check', 'pin', 'render'].includes(command)) {
     io.err(`unknown command "${command}"\n${USAGE}`)
     return 2
   }
@@ -68,9 +66,7 @@ export async function run(argv: string[], io: Io): Promise<number> {
     if (values.version !== undefined && command !== 'pin' && command !== 'render') throw new InputError('--version is only for pin and render')
     if ((values.out !== undefined || values.include !== undefined) && command !== 'render') throw new InputError('--out and --include are only for render')
     if (command === 'pin' && values.version === undefined) throw new InputError('pin needs --version <v>')
-    if (command === 'adopt' ? positionals.length !== 1 : positionals.length !== 0) {
-      throw new InputError(command === 'adopt' ? 'adopt takes one file' : `${command} takes no file`)
-    }
+    if (positionals.length !== 0) throw new InputError(`${command} takes no file`)
     const config = readConfig(values.config, io.cwd)
 
     if (command === 'build') {
@@ -100,21 +96,15 @@ export async function run(argv: string[], io: Io): Promise<number> {
       return 0
     }
 
-    if (command === 'render') {
-      const result = await renderProject(config, {
-        ...(values.out === undefined ? {} : { out: resolve(io.cwd, values.out) }),
-        ...(values.version === undefined ? {} : { version: values.version }),
-        include: values.include ?? [],
-      })
-      io.out(`rendered ${result.written.length} document${result.written.length === 1 ? '' : 's'} to ${result.out}`)
-      return 0
-    }
-
-    const result = await adoptFile(config, positionals[0] as string, io.cwd)
-    io.out(`adopted ${posix(relative(io.cwd, result.file))}: ${result.status ? `status ${result.status}, ` : ''}contentHash ${result.hash}`)
+    const result = await renderProject(config, {
+      ...(values.out === undefined ? {} : { out: resolve(io.cwd, values.out) }),
+      ...(values.version === undefined ? {} : { version: values.version }),
+      include: values.include ?? [],
+    })
+    io.out(`rendered ${result.written.length} document${result.written.length === 1 ? '' : 's'} to ${result.out}`)
     return 0
   } catch (error) {
-    if (error instanceof AdoptError || error instanceof RefusedError) {
+    if (error instanceof RefusedError) {
       io.err(error.message)
       return 1
     }

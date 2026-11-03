@@ -25,7 +25,7 @@ import { CLI, Project, cleanup } from './helpers.ts'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { DOC_READ_ERROR_CODES, USAGE, contentHashOf, doc, registerRenderer, renderProject, section, text } from '../src/index.ts'
+import { DOC_READ_ERROR_CODES, USAGE, registerRenderer, renderProject } from '../src/index.ts'
 import type { RenderContext } from '../src/index.ts'
 
 const index = JSON.parse(
@@ -41,9 +41,11 @@ const value = (id: string): any => {
 describe('the facts of the document model', () => {
   it('carry no pending label, so a reader without labels sees them', () => {
     const modelFacts = index.facts.filter((f) => /^clarify-kit\.(doc-types|blocks|topics|templates|modules)\./.test(f.id))
+    // doc-types.content-hash is retired in next, so a reader on head no longer sees it
     expect(modelFacts.length).toBe(32)
+    expect(modelFacts.filter((f) => facts.has(f.id)).length).toBe(31)
     for (const fact of modelFacts) {
-      expect(facts.has(fact.id), fact.id).toBe(true)
+      expect(facts.has(fact.id) || fact.id === 'clarify-kit.doc-types.content-hash', fact.id).toBe(true)
       expect(fact.variants?.every((v) => v.pending === undefined), fact.id).toBe(true)
     }
   })
@@ -126,10 +128,10 @@ const builtSamples = (): Promise<any> =>
 describe('build, check, CLI and index format against the facts', () => {
   it('carry no pending label on the facts of the commands that exist, the index format and the check codes', () => {
     const ids = [
-      ...['commands', 'build', 'check', 'adopt', 'config', 'entry-rule'].map((n) => `clarify-kit.cli.${n}`),
+      ...['commands', 'build', 'check', 'config', 'entry-rule'].map((n) => `clarify-kit.cli.${n}`),
       ...index.facts.filter((f) => /^clarify-kit\.(index|check)\./.test(f.id)).map((f) => f.id),
     ]
-    expect(ids.length).toBe(6 + 4 + 2)
+    expect(ids.length).toBe(5 + 4 + 2)
     for (const id of ids) {
       expect(facts.has(id), id).toBe(true)
       expect(index.facts.find((f) => f.id === id)?.variants?.every((v) => v.pending === undefined), id).toBe(true)
@@ -169,7 +171,7 @@ describe('build, check, CLI and index format against the facts', () => {
       for (const key of Object.keys(doc)) expect(allowed.includes(key), `${doc.id}: ${key}`).toBe(true)
       for (const key of Object.keys(doc)) seen.add(key)
     }
-    for (const key of ['id', 'factRefs', 'template', 'since', 'contentHash', 'supersedes']) expect(seen.has(key), key).toBe(true)
+    for (const key of ['id', 'factRefs', 'template', 'since', 'supersedes']) expect(seen.has(key), key).toBe(true)
     expect(fact.required).toContain('id')
     expect(fact.required).toContain('factRefs')
     expect(fact.optional).toContain('template')
@@ -178,14 +180,15 @@ describe('build, check, CLI and index format against the facts', () => {
   it('lists the commands the CLI runs, and the exit codes of the commands facts', () => {
     const commands = value('cli.commands').commands as string[]
     const p = new Project('spec-cli').config().entry()
-    for (const name of ['build', 'check', 'adopt']) {
+    for (const name of ['build', 'check']) {
       expect(commands).toContain(name)
       expect(value(`cli.${name}`).exitCodes).toMatchObject({ 0: expect.any(String), 2: expect.any(String) })
     }
     const status = (...args: string[]) => spawnSync(process.execPath, [CLI, ...args], { cwd: p.dir }).status
     expect(status('build')).toBe(0)
     expect(status('check')).toBe(0)
-    expect(status('adopt', 'none.doc.ts')).toBe(2)
+    expect(status('adopt', 'none.doc.ts')).toBe(2) // adopt is retired, so it is an unknown command
+    expect(commands).not.toContain('adopt')
     expect(status('no-such-command')).toBe(2)
     expect(value('check.codes').exit).toMatch(/1/)
   })
@@ -208,11 +211,14 @@ describe('pin, render, read and impact against the facts', () => {
 
   it('leave no fact with a pending label, so a reader without labels sees every fact', () => {
     expect(index.facts.length).toBeGreaterThan(0)
-    expect(facts.size).toBe(index.facts.length)
+    // cli.adopt and doc-types.content-hash are retired in next, so a reader on head does not see them
+    expect(facts.size).toBe(index.facts.length - 2)
+    expect(facts.has('clarify-kit.cli.adopt')).toBe(false)
+    expect(facts.has('clarify-kit.doc-types.content-hash')).toBe(false)
     for (const fact of index.facts) expect(fact.variants?.every((v) => v.pending === undefined), fact.id).toBe(true)
   })
 
-  it('runs the five commands of the commands fact, and pin and render take the flags their facts list', () => {
+  it('runs the four commands of the commands fact, and pin and render take the flags their facts list', () => {
     const p = new Project('spec-pin-render').config().entry()
     for (const name of value('cli.commands').commands as string[]) {
       expect(USAGE, name).toContain(`  ${name}`)
@@ -279,13 +285,5 @@ describe('pin, render, read and impact against the facts', () => {
     expect(seen).toHaveLength(1)
     expect(Object.keys(seen[0] as object)).toEqual(Object.keys(fact.fields))
     expect(fact.type).toBe('RenderContext')
-  })
-
-  it('leaves since and pending out of the content hash, as the content hash fact lists', () => {
-    expect(value('doc-types.content-hash').excludes).toEqual(expect.arrayContaining(['since', 'pending']))
-    const make = (marks: Record<string, string>) =>
-      doc({ id: 'a', title: 'A', status: 'draft', sections: [section('s', 'S', [text('t', marks)], marks)] })
-    expect(contentHashOf(make({ since: 'next', pending: 'later' }))).toBe(contentHashOf(make({})))
-    expect(contentHashOf(make({ since: '1.0.0' }))).toBe(contentHashOf(make({})))
   })
 })

@@ -48,11 +48,10 @@ describe('the four document types', () => {
       status: 'accepted',
       appliesFrom: 'next',
       supersedes: ['older-decision'],
-      contentHash: 'a'.repeat(64),
     })
 
     const rec = await load('type-record')
-    expect(rec).toMatchObject({ type: 'record', date: '2026-11-02', contentHash: 'b'.repeat(64) })
+    expect(rec).toMatchObject({ type: 'record', date: '2026-11-02' })
     expect('status' in rec).toBe(false)
   })
 
@@ -89,11 +88,11 @@ describe('values the types do not allow are refused when the document is loaded'
     }
   })
 
-  it('refuses a bad appliesFrom, since, date, hash, id and field name', () => {
+  it('refuses a bad appliesFrom, since, date, id and field name', () => {
     const decide = (extra: object) =>
       decision({ id: 'd', title: 'D', status: 'proposed', appliesFrom: '1.0.0', sections: body, ...extra })
     expect(() => decide({ appliesFrom: '1' })).toThrow(/appliesFrom/)
-    expect(() => decide({ contentHash: 'abc' })).toThrow(/sha256/)
+    expect(() => decide({ contentHash: 'a'.repeat(64) })).toThrow(/unknown field "contentHash"/)
     expect(() => decide({ supersedes: 'd' })).toThrow(/supersede itself/)
     expect(() => decide({ extra: 1 })).toThrow(/unknown field "extra"/)
     expect(() => doc({ id: 'd', title: 'D', status: 'draft', since: 'later', sections: body })).toThrow(/doc since/)

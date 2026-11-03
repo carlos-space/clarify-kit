@@ -1,4 +1,4 @@
-// Tests of pin, read, impact, render and merge-since on documents, and the hash that leaves out `pending`.
+// Tests of pin, read, impact, render and merge-since on documents.
 import { execFileSync, spawnSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -7,7 +7,6 @@ import { impactOf, mergeSince } from 'fact-kit'
 import { afterAll, describe, expect, it } from 'vitest'
 import {
   DocReadError,
-  adoptFile,
   checkProject,
   docImpactExtractor,
   pinDocs,
@@ -103,19 +102,18 @@ describe('pin', () => {
   })
 })
 
-describe('a body hash leaves out pending', () => {
+describe('a decision source with pending labels', () => {
   const source = (mark: string, sectionMark = '') =>
     `decision({
   id: 'use-x',
   title: 'Use X',
-  status: 'proposed',
+  status: 'accepted',
   appliesFrom: 'next',
   sections: [section('context', 'Context', [text('The reason.'${mark})]${sectionMark})],
 })`
   const FILE = 'docs/main/use-x.doc.ts'
-  it('keeps an adopted decision passing when the pending label of a block or a section is taken off', async () => {
-    const p = new Project('hash-pending').config().entry().doc(FILE, 'decision, section, text', source(", { since: 'next', pending: 'later' }", ", { pending: 'later' }"))
-    await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
+  it('stays valid when the pending labels are taken off and the next pin sets the version', async () => {
+    const p = new Project('pin-pending').config().entry().doc(FILE, 'decision, section, text', source(", { since: 'next', pending: 'later' }", ", { pending: 'later' }"))
     expect(await checkProject(readConfig(undefined, p.dir))).toEqual([])
     // the feature lands: the author takes the labels off, and the next pin sets the version
     p.write(FILE, p.read(FILE).replace(", pending: 'later'", '').replace(", { pending: 'later' }", ''))
@@ -124,9 +122,6 @@ describe('a body hash leaves out pending', () => {
     await pinDocs(readConfig(undefined, p.dir), '0.2.0')
     expect(p.read(FILE)).toContain("{ since: '0.2.0' }")
     expect(await checkProject(readConfig(undefined, p.dir))).toEqual([])
-    // the text of the body is still guarded
-    p.write(FILE, p.read(FILE).replace('The reason.', 'Another reason.'))
-    expect((await checkProject(readConfig(undefined, p.dir))).map((x) => x.code)).toEqual(['adopted-content-changed'])
   })
 })
 

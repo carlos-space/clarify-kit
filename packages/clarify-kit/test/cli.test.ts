@@ -65,28 +65,31 @@ describe('clarify-kit check', () => {
   })
 })
 
-describe('clarify-kit adopt', () => {
-  it('exits 0 and writes a hash that makes check pass', () => {
+describe('clarify-kit adopt, which is retired', () => {
+  it('is an unknown command: exits 2 and prints the usage, and leaves the file as it was', () => {
     const p = project('cli-adopt').doc('docs/main/use-x.doc.ts', 'decision, section, text', DEC)
+    const before = p.read('docs/main/use-x.doc.ts')
     const r = cli(p, 'adopt', 'docs/main/use-x.doc.ts')
-    expect(r.status).toBe(0)
-    expect(r.out).toMatch(/^adopted docs\/main\/use-x\.doc\.ts: status accepted, contentHash [0-9a-f]{64}\n$/)
-    expect(p.read('docs/main/use-x.doc.ts')).toContain("status: 'accepted'")
-    expect(cli(p, 'check').status).toBe(0)
-    p.write('docs/main/use-x.doc.ts', p.read('docs/main/use-x.doc.ts').replace('why', 'because'))
-    const changed = cli(p, 'check')
-    expect(changed.status).toBe(1)
-    expect(changed.out).toContain('adopted-content-changed')
+    expect(r.status).toBe(2)
+    expect(r.err).toContain('unknown command "adopt"')
+    expect(r.err).toContain('usage: clarify-kit <command> [options]')
+    expect(r.err).not.toMatch(/^\s+adopt\s/m)
+    expect(p.read('docs/main/use-x.doc.ts')).toBe(before)
   })
-  it('exits 1 for a file that is not a decision or a record', () => {
-    const r = cli(project('cli-adopt-doc'), 'adopt', 'docs/main/a.doc.ts')
-    expect(r.status).toBe(1)
-    expect(r.err).toContain('only a decision or a record')
-  })
-  it('exits 2 for a file that is not there, and for a missing argument', () => {
-    const p = project('cli-adopt-input')
-    expect(cli(p, 'adopt', 'docs/main/none.doc.ts').status).toBe(2)
-    expect(cli(p, 'adopt').status).toBe(2)
+})
+
+describe('a source that still has contentHash', () => {
+  it('fails the build as an unknown field and names contentHash', () => {
+    const p = project('cli-content-hash').doc(
+      'docs/main/use-x.doc.ts',
+      'decision, section, text',
+      DEC.replace("appliesFrom: 'next',", `appliesFrom: 'next', contentHash: '${'a'.repeat(64)}',`),
+    )
+    const r = cli(p, 'build')
+    expect(r.status).not.toBe(0)
+    expect(r.err).toContain('contentHash')
+    expect(r.err).toContain('load-error')
+    expect(() => p.read('dist/main/index.json')).toThrow()
   })
 })
 

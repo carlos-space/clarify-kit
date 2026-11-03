@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest'
-import { adoptFile, buildProject, checkProject, contentHashOf, loadProject, readConfig } from '../src/index.ts'
+import { buildProject, checkProject, loadProject, readConfig } from '../src/index.ts'
 import type { Document, Problem } from '../src/index.ts'
 import { Project, cleanup } from './helpers.ts'
 
@@ -232,43 +232,20 @@ describe('check against the counterexamples', () => {
   })
 })
 
-describe('what is adopted does not change', () => {
-  const decisionSource = (status: string, extra = '', body = 'The reason.', blockOptions = '') =>
+describe('a decision is replaced by another one', () => {
+  const decisionSource = (status: string, body = 'The reason.', blockOptions = '') =>
     `decision({
   id: 'use-x',
   title: 'Use X',
   status: '${status}',
-  appliesFrom: 'next',${extra}
+  appliesFrom: 'next',
   sections: [section('context', 'Context', [text('${body}'${blockOptions})])],
 })`
-  const project = (label: string, source: string) =>
-    new Project(label).config().entry().doc('docs/main/use-x.doc.ts', 'decision, section, text', source)
   const FILE = 'docs/main/use-x.doc.ts'
 
-  it('writes the hash and the state with adopt, and check passes', async () => {
-    const p = project('adopt', decisionSource('proposed'))
-    const result = await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
-    expect(result).toMatchObject({ type: 'decision', status: 'accepted' })
-    expect(p.read(FILE)).toMatch(/status: 'accepted'/)
-    expect(p.read(FILE)).toContain(`contentHash: '${result.hash}'`)
-    expect(await check(p)).toEqual([])
-    // running it again keeps the same hash and does not add a second field
-    await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
-    expect(p.read(FILE).match(/contentHash/g)).toHaveLength(1)
-  })
-
-  it('reports adopted-content-changed when one sentence of an adopted decision is changed', async () => {
-    const p = project('changed', decisionSource('proposed'))
-    await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
-    p.write(FILE, p.read(FILE).replace('The reason.', 'Another reason.'))
-    const problems = await check(p)
-    expect(problems.map((x) => [x.code, x.location])).toEqual([['adopted-content-changed', FILE]])
-  })
-
   it('still passes when pin sets the versions and the decision is then replaced', async () => {
-    const p = project('pinned', decisionSource('proposed', '', 'The reason.', ", { since: 'next' }"))
-    p.doc('docs/main/use-y.doc.ts', 'decision, section, text', decisionSource('accepted', '', 'Y reason.').replace("'use-x'", "'use-y'").replace('Use X', 'Use Y'))
-    await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
+    const p = new Project('pinned').config().entry().doc(FILE, 'decision, section, text', decisionSource('accepted', 'The reason.', ", { since: 'next' }"))
+    p.doc('docs/main/use-y.doc.ts', 'decision, section, text', decisionSource('accepted', 'Y reason.').replace("'use-x'", "'use-y'").replace('Use X', 'Use Y'))
     expect(await check(p)).toEqual([])
     // what `pin --version 1.0.0` does to the source: next becomes the version
     p.write(FILE, p.read(FILE).replace("appliesFrom: 'next'", "appliesFrom: '1.0.0'").replace("since: 'next'", "since: '1.0.0'"))
@@ -279,47 +256,11 @@ describe('what is adopted does not change', () => {
     expect(await check(p)).toEqual([])
   })
 
-  it('hashes the body only', async () => {
-    const a = (await loadSample('type-decision')) as Document
-    expect(contentHashOf(a)).toMatch(/^[0-9a-f]{64}$/)
-    const p = project('hash-body', decisionSource('proposed'))
-    const before = await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
-    p.write(FILE, p.read(FILE).replace("title: 'Use X'", "title: 'Use X well'").replace("appliesFrom: 'next'", "appliesFrom: '2.0.0'"))
-    const after = await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
-    expect(after.hash).toBe(before.hash)
-  })
-
-  it('adopts a record by writing the hash only, and a record that changed is reported', async () => {
-    const p = new Project('record').config().entry()
-    p.doc('docs/main/log.doc.ts', 'record, section, text', `record({
-  id: 'log',
-  title: 'Log',
-  date: '2026-11-02',
-  sections: [section('notes', 'Notes', [text('Done.')])],
-})`)
-    const result = await adoptFile(readConfig(undefined, p.dir), 'docs/main/log.doc.ts', p.dir)
-    expect(result.status).toBeUndefined()
+  it('does not compare the body of an accepted decision with anything, because PR review guards it', async () => {
+    const p = new Project('no-body-check').config().entry().doc(FILE, 'decision, section, text', decisionSource('accepted'))
     expect(await check(p)).toEqual([])
-    p.write('docs/main/log.doc.ts', p.read('docs/main/log.doc.ts').replace('Done.', 'Not done.'))
-    expect(codes(await check(p))).toEqual(['adopted-content-changed'])
-  })
-
-  it('refuses a document that is neither a decision nor a record, and a file that is not there', async () => {
-    const p = new Project('adopt-refuse').config().entry().doc('docs/main/a.doc.ts', 'doc, section, text', A)
-    await expect(adoptFile(readConfig(undefined, p.dir), 'docs/main/a.doc.ts', p.dir)).rejects.toThrow(/only a decision or a record/)
-    await expect(adoptFile(readConfig(undefined, p.dir), 'docs/main/none.doc.ts', p.dir)).rejects.toThrow(/no such file/)
-  })
-
-  it('keeps the quotes and the indentation of the source, and adds the hash after the last field', async () => {
-    const p = new Project('adopt-style').config().entry()
-    p.doc('docs/main/use-x.doc.ts', 'decision, section, text', `decision({
-    "id": "use-x", title: "Use X", status: "proposed",
-    appliesFrom: "next",
-    sections: [section("c", "C", [text("t")])]
-  })`)
-    await adoptFile(readConfig(undefined, p.dir), FILE, p.dir)
-    expect(p.read(FILE)).toMatch(/status: "accepted"/)
-    expect(p.read(FILE)).toMatch(/sections: \[section\("c", "C", \[text\("t"\)\]\)\],\n    contentHash: '[0-9a-f]{64}'\n  \}\)/)
+    p.write(FILE, p.read(FILE).replace('The reason.', 'Another reason.'))
+    expect(await check(p)).toEqual([])
   })
 })
 

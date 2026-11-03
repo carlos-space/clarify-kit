@@ -14,5 +14,4 @@ export default decision({
       text('The discount is a ratio of the cart total for each kind of customer.', { since: '0.1.0' }),
     ]),
   ],
-  contentHash: '3ab1e7078c2d6ab39a2885a952486ffacda10a116d70a65b644a9b006d35543d',
 })
