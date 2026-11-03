@@ -103,7 +103,7 @@ export default [
         precedence: '命令列旗標優先於設定檔',
         projectDir: '設定檔所在目錄是專案目錄，`dist/`、`package.json` 與 facts 套件都從這裡找；沒有設定檔時是工作目錄',
       } },
-      { since: 'next',
+      { since: '0.3.0-alpha.1',
         replace: { '/settings/factSources': '文件會引用 fact 的 facts 套件，寫成 `<套件>/<entry>` 的字串，或 `{ "source": "<套件>/<entry>", "layer": "<層>" }` 的物件，物件的 `layer` 用在來源 index 沒有 `layer` 時，陣列從設定檔所在目錄解析，預設為空' },
         add: { '/settings': { docSources: '文件會引用的其他文件套件，列已安裝的 `-docs` 套件 `<套件>/<entry>`，寫法同 `factSources`（字串或帶 `layer` 的物件），預設為空' } },
       },
@@ -121,7 +121,7 @@ export default [
         outside: '不在任何 entry 底下的 `*.doc.ts` 由 check 回報 `outside-entry`',
         sameAs: 'fact-kit 的 `*.facts.ts` entry 規則',
       } },
-      { since: 'next',
+      { since: '0.3.0-alpha.1',
         replace: { '/entryFile': '`index.ts` 預設匯出 entry 層欄位 `layer`、`describes` 與 `publish`，用 `defineDocs` 宣告' },
         add: { '': { layer: '`layer` 宣告這個 entry 的文件屬於哪一層，取值見 `clarify-kit.cli.layer`，同一個 entry 的文件同一層；沒寫時 check 回報 `undeclared-layer`，build 失敗（結束碼 1）' } },
       },
@@ -130,7 +130,7 @@ export default [
   ),
   f.value(
     'layer',
-    history({ since: 'next', value: {
+    history({ since: '0.3.0-alpha.1', value: {
       values: ['org', 'product', 'implementation', 'tool'],
       order: 'org > product > implementation，由上而下',
       citeRule: '`org`、`product`、`implementation` 三層的文件只引用同層或上層的 fact 與文件，引用下層時 check 回報 `cites-lower-layer`',
@@ -143,7 +143,7 @@ export default [
   ),
   f.value(
     'source-layer',
-    history({ since: 'next', value: {
+    history({ since: '0.3.0-alpha.1', value: {
       first: '先讀被引用來源 index 的頂層 `layer`',
       configFallback: 'index 沒有 `layer` 時，由引用端在設定檔把來源寫成 `{ "source": "<套件>/<entry>", "layer": "<層>" }`，`factSources` 與 `docSources` 都接受',
       mismatch: '設定檔和來源 index 兩邊都有又不同時，check 回報 `layer-mismatch`',
@@ -153,7 +153,7 @@ export default [
   ),
   f.value(
     'doc-reference',
-    history({ since: 'next', value: {
+    history({ since: '0.3.0-alpha.1', value: {
       syntax: '`text` 區塊內寫 `doc:<target>#<id>`',
       target: '同專案的 entry 名稱（相對 `docsDir` 的路徑），或設定檔 `docSources` 列的 `<套件>/<entry>`',
       id: '被引用的文件 id',
