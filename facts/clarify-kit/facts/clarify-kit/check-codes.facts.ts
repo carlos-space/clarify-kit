@@ -31,6 +31,20 @@ export default [
         '/codes': ['adopted-content-changed'],
         '/scope': ['adopted-content-changed'],
       } },
+      { since: 'next', add: {
+        '/codes': {
+          'cites-lower-layer': '引用下層的 fact 或文件',
+          'undeclared-layer': '文件 entry 或被引用的來源查不到層級',
+          'unknown-doc-reference': '`doc:` 引用不存在的文件',
+          'layer-mismatch': '設定檔寫的層級和來源 index 的 `layer` 不同',
+        },
+        '/scope': {
+          'cites-lower-layer': '`org`、`product`、`implementation` 照由上而下比較，`tool` 每一層都可引用，見 `clarify-kit.cli.layer`',
+          'undeclared-layer': 'entry 沒寫 `layer`，或被引用的來源 index 與設定檔都沒有層級，後者由引用它的文件回報；build 同樣失敗',
+          'unknown-doc-reference': '到同專案的 entry 與設定檔 `docSources` 列的文件套件找，見 `clarify-kit.cli.doc-reference`',
+          'layer-mismatch': '只在兩邊都有層級又不同時回報，見 `clarify-kit.cli.source-layer`',
+        },
+      } },
     ),
     { title: 'check 錯誤碼', description: 'check 回報問題用的穩定錯誤碼，至少六個。' },
   ),
