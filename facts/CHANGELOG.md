@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/carlos-space/clarify-kit/compare/clarify-kit-facts/v0.2.0-alpha.1...clarify-kit-facts/v0.2.0) (2026-11-03)
+
+
+### chore
+
+* **release/v0.2:** clarify-kit-facts 0.2.0 ([d5d58cc](https://github.com/carlos-space/clarify-kit/commit/d5d58cc82fe627e60ef897cf9a8fe0218d7ea417))
+
 ## [0.2.0-alpha.1](https://github.com/carlos-space/clarify-kit/compare/clarify-kit-facts/v0.1.0...clarify-kit-facts/v0.2.0-alpha.1) (2026-11-03)
 
 
