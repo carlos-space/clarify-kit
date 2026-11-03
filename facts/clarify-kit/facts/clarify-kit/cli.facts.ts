@@ -11,7 +11,7 @@ export default [
     'commands',
     history(
       { since: '0.1.0-alpha.1', value: { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] } },
-      { since: 'next', replace: { '/commands': ['build', 'check', 'pin', 'render'] } },
+      { since: '0.2.0-alpha.1', replace: { '/commands': ['build', 'check', 'pin', 'render'] } },
     ),
     { title: 'CLI 指令清單', description: '`clarify-kit` 的 CLI 指令清單。' },
   ),
@@ -47,7 +47,7 @@ export default [
     {
       title: 'adopt 指令',
       description: '採納指令。把狀態改成已採納並寫入內文雜湊，重跑會更新雜湊。',
-      when: { deprecatedIn: 'next', removeIn: 'next' },
+      when: { deprecatedIn: '0.2.0-alpha.1', removeIn: '0.2.0-alpha.1' },
     },
   ),
   f.value(
@@ -60,7 +60,7 @@ export default [
         exitCodes: { ...exitCodes, 2: '沒給 `--version` 或版號不是 semver' },
         keeps: '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。雜湊排除 `since` 與 `pending`，所以 pin 與拿掉標籤都不影響採納後內文的雜湊',
       } },
-      { since: 'next', set: { '/keeps': '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。' } },
+      { since: '0.2.0-alpha.1', set: { '/keeps': '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。' } },
     ),
     { title: 'pin 指令', description: '發版時把 `next` 釘成版號，用法同 `fact-kit pin`。' },
   ),
