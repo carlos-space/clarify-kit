@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.0](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.3.0-alpha.1...clarify-kit/v0.3.0) (2026-11-03)
+
+
+### chore
+
+* **release/v0.3:** clarify-kit 0.3.0 ([c0532d3](https://github.com/carlos-space/clarify-kit/commit/c0532d3b85ae38b0df55f08d685b62be7936a2c5))
+
+## [0.3.0-alpha.1](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.2.0...clarify-kit/v0.3.0-alpha.1) (2026-11-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* 文件與來源宣告層級，check 擋下引用下層 ([#18](https://github.com/carlos-space/clarify-kit/issues/18))
+
+### Added
+
+* 文件與來源宣告層級，check 擋下引用下層 ([#18](https://github.com/carlos-space/clarify-kit/issues/18)) ([13219fa](https://github.com/carlos-space/clarify-kit/commit/13219fa43b484573203fb826a9d3ca6612f65fe0))
+
 ## [0.2.0](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.2.0-alpha.1...clarify-kit/v0.2.0) (2026-11-03)
 
 

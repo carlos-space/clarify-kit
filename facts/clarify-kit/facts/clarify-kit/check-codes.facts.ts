@@ -31,7 +31,7 @@ export default [
         '/codes': ['adopted-content-changed'],
         '/scope': ['adopted-content-changed'],
       } },
-      { since: 'next', add: {
+      { since: '0.3.0-alpha.1', add: {
         '/codes': {
           'cites-lower-layer': '引用下層的 fact 或文件',
           'undeclared-layer': '文件 entry 或被引用的來源查不到層級',
