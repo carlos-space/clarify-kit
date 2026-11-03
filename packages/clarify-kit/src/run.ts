@@ -16,7 +16,7 @@ export const USAGE = `usage: clarify-kit <command> [options]
 commands:
   build  [--config <file>]                  write dist/<entry>/index.json for every entry
   check  [--config <file>] [--json]         report problems in the documents; exit 1 when there are any
-  pin    --version <v> [--config <file>]    turn the "next" in the "since" of documents and blocks into <v>
+  pin    --version <v> [--config <file>]    turn the "next" in the "since" and the version fields of documents and blocks into <v>
   render [--out <dir>] [--version <v>] [--include <label>...] [--config <file>]
                                             write the documents as Markdown outside every git work tree
   --version, --help
