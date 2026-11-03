@@ -27,7 +27,7 @@ export default [
         output: '每筆問題含 `code`、`message` 與 `location`',
         exit: '有任何問題時結束碼為 1',
       } },
-      { since: 'next', remove: {
+      { since: '0.2.0-alpha.1', remove: {
         '/codes': ['adopted-content-changed'],
         '/scope': ['adopted-content-changed'],
       } },

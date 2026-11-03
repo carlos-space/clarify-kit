@@ -57,7 +57,7 @@ export default [
         },
         noOtherFields: true,
       } },
-      { since: 'next', replace: { '/byType/decision/optional': [], '/byType/record/optional': [] } },
+      { since: '0.2.0-alpha.1', replace: { '/byType/decision/optional': [], '/byType/record/optional': [] } },
     ),
     { title: 'docs index 裡文件的欄位', description: '`docs` 陣列的每份文件都有 `id`、`type`、`title`、`topics`、`sections` 與 `factRefs`，用了範本才有 `template`，再加各類型自己的欄位。' },
   ),
