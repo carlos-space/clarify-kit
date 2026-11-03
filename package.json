@@ -1,6 +1,6 @@
 {
   "name": "clarify-kit-workspace",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "Workspace root of clarify-kit. The package is in packages/clarify-kit.",
   "packageManager": "pnpm@12.3.4",
