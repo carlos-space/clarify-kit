@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.1](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.3.1-alpha.1...clarify-kit/v0.3.1) (2026-11-03)
+
+
+### chore
+
+* **release/v0.3:** clarify-kit 0.3.1 ([fd710fc](https://github.com/carlos-space/clarify-kit/commit/fd710fc20b218c74a7a74c82938326bda58a307a))
+
+## [0.3.1-alpha.1](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.3.0...clarify-kit/v0.3.1-alpha.1) (2026-11-03)
+
+
+### Fixed
+
+* **clarify-kit:** pin 也釘 requirement 的 release 與 decision 的 appliesFrom ([#25](https://github.com/carlos-space/clarify-kit/issues/25)) ([14b0f4c](https://github.com/carlos-space/clarify-kit/commit/14b0f4ce05286bef8a505c7a7fce62b15fc25868))
+
 ## [0.3.0](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.3.0-alpha.1...clarify-kit/v0.3.0) (2026-11-03)
 
 

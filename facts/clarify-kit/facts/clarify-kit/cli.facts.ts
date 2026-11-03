@@ -61,7 +61,7 @@ export default [
           keeps: '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。雜湊排除 `since` 與 `pending`，所以 pin 與拿掉標籤都不影響採納後內文的雜湊',
         } },
         { since: '0.2.0-alpha.1', set: { '/keeps': '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。' } },
-        { since: 'next', set: {
+        { since: '0.3.1-alpha.1', set: {
           '/does': '把 `docsDir` 底下 `*.doc.ts` 裡文件、段落與區塊的 `since: next` 換成版號 `<v>`，也換掉各文件類型的版本欄位，也就是 requirement 的 `release` 與 decision 的 `appliesFrom`，用法同 `fact-kit pin`。欄位以 `clarify-kit.doc-types` 的 `versionField` 為準',
           '/keeps': '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；已是版號的 `release` 與 `appliesFrom` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。',
         } },
