@@ -109,6 +109,21 @@ importers:
 
   .: {}
 
+  docs:
+    devDependencies:
+      clarify-kit:
+        specifier: workspace:*
+        version: link:../packages/clarify-kit
+      clarify-kit-facts:
+        specifier: workspace:*
+        version: link:../facts
+      fact-kit:
+        specifier: ^0.12.1
+        version: 0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta)
+      oxc-parser:
+        specifier: ^0.155.0
+        version: 0.155.0
+
   examples/sample-product/sample-product-docs:
     devDependencies:
       clarify-kit:
