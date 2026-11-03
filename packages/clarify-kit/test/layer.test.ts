@@ -240,6 +240,7 @@ describe('the docs index of format 1.0 and 1.1', () => {
     expect(r.json('node_modules/acme-docs-1x/main/index.json').formatVersion).toBe('1.0')
     expect(reader.layer).toBeUndefined()
     expect(reader.get('guide').id).toBe('guide')
+    expect(reader.get('guide').docRefs).toEqual([])
   })
 
   it('reads a 1.1 index with its layer', () => {

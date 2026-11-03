@@ -1,4 +1,4 @@
 {
   "docsDir": "docs",
-  "factSources": [{ "source": "clarify-kit-facts/clarify-kit", "layer": "tool" }]
+  "factSources": ["clarify-kit-facts/clarify-kit"]
 }

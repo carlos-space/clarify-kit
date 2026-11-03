@@ -138,7 +138,8 @@ export function selectDocs(docs: readonly Document[], options: SelectOptions = {
     const sections = doc.sections
       .filter((s) => visible(s, options, `${label} section ${s.id}`))
       .map((s) => ({ ...s, blocks: s.blocks.filter((b, i) => visible(b, options, `${label} section ${s.id} blocks[${i}]`)) }))
-    out.push({ ...doc, sections } as Document)
+    // An index of format 1.0 has no `docRefs`: its documents cite no documents.
+    out.push({ ...doc, docRefs: doc.docRefs ?? [], sections } as Document)
   }
   return out
 }
