@@ -118,8 +118,8 @@ importers:
         specifier: workspace:*
         version: link:../facts
       fact-kit:
-        specifier: ^0.12.1
-        version: 0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta)
+        specifier: ^0.13.0
+        version: 0.13.0(oxc-parser@0.155.0)(typescript@7.1.0-beta)
       oxc-parser:
         specifier: ^0.155.0
         version: 0.155.0
@@ -130,8 +130,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/clarify-kit
       fact-kit:
-        specifier: ^0.12.1
-        version: 0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta)
+        specifier: ^0.13.0
+        version: 0.13.0(oxc-parser@0.155.0)(typescript@7.1.0-beta)
       oxc-parser:
         specifier: ^0.155.0
         version: 0.155.0
@@ -142,8 +142,8 @@ importers:
   examples/sample-product/sample-product-facts:
     devDependencies:
       fact-kit:
-        specifier: ^0.12.1
-        version: 0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta)
+        specifier: ^0.13.0
+        version: 0.13.0(oxc-parser@0.155.0)(typescript@7.1.0-beta)
       oxc-parser:
         specifier: ^0.155.0
         version: 0.155.0
@@ -154,8 +154,8 @@ importers:
         specifier: workspace:*
         version: link:clarify-kit
       fact-kit:
-        specifier: ^0.12.1
-        version: 0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta)
+        specifier: ^0.13.0
+        version: 0.13.0(oxc-parser@0.155.0)(typescript@7.1.0-beta)
       oxc-parser:
         specifier: ^0.155.0
         version: 0.155.0
@@ -163,8 +163,8 @@ importers:
   facts/clarify-kit:
     devDependencies:
       fact-kit:
-        specifier: ^0.12.1
-        version: 0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta)
+        specifier: ^0.13.0
+        version: 0.13.0(oxc-parser@0.155.0)(typescript@7.1.0-beta)
       oxc-parser:
         specifier: ^0.155.0
         version: 0.155.0
@@ -175,8 +175,8 @@ importers:
         specifier: ^24.13.4
         version: 24.19.2
       fact-kit:
-        specifier: ^0.12.1
-        version: 0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta)
+        specifier: ^0.13.0
+        version: 0.13.0(oxc-parser@0.155.0)(typescript@7.1.0-beta)
       oxc-parser:
         specifier: ^0.155.0
         version: 0.155.0
@@ -617,8 +617,8 @@ packages:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
-  fact-kit@0.12.1:
-    resolution: {integrity: sha512-klmN+FKENQ0BEn5ujnPdA0fr99vz4fBe3c8imdGtDgJx6lNHfWo5G8z5MO0inEIatglMQRp8X5PJps6hyyqZCw==}
+  fact-kit@0.13.0:
+    resolution: {integrity: sha512-3b8qewIcCpSqMYhwgjdRfnObJkm7uJYJm2G8IYlvJy5S3c4aVscnTZ538QykZ7Eyjra3aRF20ISkEfVY4NiNZQ==}
     engines: {node: '>=24.0.0'}
     hasBin: true
     peerDependencies:
@@ -1148,7 +1148,7 @@ snapshots:
 
   expect-type@1.4.0: {}
 
-  fact-kit@0.12.1(oxc-parser@0.155.0)(typescript@7.1.0-beta):
+  fact-kit@0.13.0(oxc-parser@0.155.0)(typescript@7.1.0-beta):
     dependencies:
       ajv: 8.20.0
     optionalDependencies:

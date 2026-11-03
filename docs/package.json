@@ -12,7 +12,7 @@
   "devDependencies": {
     "clarify-kit": "workspace:*",
     "clarify-kit-facts": "workspace:*",
-    "fact-kit": "^0.12.1",
+    "fact-kit": "^0.13.0",
     "oxc-parser": "^0.155.0"
   }
 }
