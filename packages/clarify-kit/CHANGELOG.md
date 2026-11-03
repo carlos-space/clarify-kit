@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0-alpha.1](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.1.0...clarify-kit/v0.2.0-alpha.1) (2026-11-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* 移除內文雜湊與 adopt 指令，採納與寫完改由 PR 審查把關 ([#11](https://github.com/carlos-space/clarify-kit/issues/11))
+
+### Added
+
+* 移除內文雜湊與 adopt 指令，採納與寫完改由 PR 審查把關 ([#11](https://github.com/carlos-space/clarify-kit/issues/11)) ([5753607](https://github.com/carlos-space/clarify-kit/commit/57536074ef8cf2faf477b5245db85c4ada842beb))
+
 ## [0.1.0](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.1.0-alpha.1...clarify-kit/v0.1.0) (2026-11-02)
 
 
