@@ -1,6 +1,6 @@
 {
   "name": "clarify-kit-facts",
-  "version": "0.2.0-alpha.1",
+  "version": "0.2.0",
   "description": "Facts for clarify-kit: the document types, blocks, templates, CLI, index format and read API",
   "license": "MIT",
   "type": "module",

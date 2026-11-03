@@ -1,6 +1,6 @@
 {
   "name": "clarify-kit",
-  "version": "0.2.0-alpha.1",
+  "version": "0.2.0",
   "description": "Turns a discussion into documents that settle it: build the documents, and check them against the facts they cite.",
   "license": "MIT",
   "type": "module",
