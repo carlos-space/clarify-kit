@@ -6,10 +6,12 @@ import { join } from 'node:path'
 import { impactOf, mergeSince } from 'fact-kit'
 import { afterAll, describe, expect, it } from 'vitest'
 import {
+  DOC_TYPES,
   DocReadError,
   checkProject,
   docImpactExtractor,
   pinDocs,
+  pinnableFields,
   readConfig,
   readDocs,
   registerDocImpactExtractor,
@@ -99,6 +101,91 @@ describe('pin', () => {
     const result = await pinDocs(readConfig(undefined, p.dir), '1.0.0')
     expect(result.changed).toEqual([])
     expect(result.skipped).toHaveLength(1)
+  })
+
+  describe('the version fields of the document types', () => {
+    const DECISION = `decision({
+  id: 'd',
+  title: 'D',
+  status: 'proposed',
+  appliesFrom: 'next',
+  sections: [section('s', 'S', [text('t', { since: 'next' })])],
+})`
+    const REQUIREMENT = `requirement({ id: 'r', title: 'R', status: 'planned', release: 'next', sections: [section('s', 'S', [text('t')])] })`
+    const project = (label: string, files: Record<string, [string, string]>): Project => {
+      const p = new Project(label).config().entry()
+      for (const [rel, [imports, body]] of Object.entries(files)) p.doc(rel, imports, body)
+      return p
+    }
+
+    it('pins appliesFrom of a decision, release of a requirement and a block since, and changes nothing else', async () => {
+      const p = project('pin-fields', {
+        'docs/main/d.doc.ts': ['decision, section, text', DECISION],
+        'docs/main/r.doc.ts': ['requirement, section, text', REQUIREMENT],
+      })
+      const before = { d: p.read('docs/main/d.doc.ts'), r: p.read('docs/main/r.doc.ts') }
+      const result = await pinDocs(readConfig(undefined, p.dir), '0.3.1')
+      expect(result.changed).toEqual([
+        { file: 'docs/main/d.doc.ts', pinned: 2 },
+        { file: 'docs/main/r.doc.ts', pinned: 1 },
+      ])
+      expect(result.skipped).toEqual([])
+      // the whole difference is three literals
+      expect(p.read('docs/main/d.doc.ts')).toBe(
+        before.d.replace("appliesFrom: 'next'", "appliesFrom: '0.3.1'").replace("{ since: 'next' }", "{ since: '0.3.1' }"),
+      )
+      expect(p.read('docs/main/r.doc.ts')).toBe(before.r.replace("release: 'next'", "release: '0.3.1'"))
+      const total = result.changed.reduce((n, c) => n + c.pinned, 0)
+      expect(total).toBe(3)
+    })
+
+    it('leaves a pending document and a version that is already set alone, and finds nothing the second time', async () => {
+      const p = project('pin-fields-keep', {
+        'docs/main/pd.doc.ts': ['decision, section', `decision({ id: 'pd', title: 'P', status: 'proposed', appliesFrom: 'next', pending: 'later', sections: [section('s', 'S', [])] })`],
+        'docs/main/pr.doc.ts': ['requirement, section', `requirement({ id: 'pr', title: 'P', status: 'planned', release: 'next', pending: 'later', sections: [section('s', 'S', [])] })`],
+        'docs/main/set.doc.ts': ['decision, section', `decision({ id: 'set', title: 'S', status: 'proposed', appliesFrom: '0.2.0', sections: [section('s', 'S', [])] })`],
+        'docs/main/d.doc.ts': ['decision, section, text', DECISION],
+      })
+      const untouched = ['pd', 'pr', 'set'].map((n) => [n, p.read(`docs/main/${n}.doc.ts`)] as const)
+      expect((await pinDocs(readConfig(undefined, p.dir), '0.3.1')).changed).toEqual([{ file: 'docs/main/d.doc.ts', pinned: 2 }])
+      for (const [n, text] of untouched) expect(p.read(`docs/main/${n}.doc.ts`)).toBe(text)
+      expect((await pinDocs(readConfig(undefined, p.dir), '0.3.1')).changed).toEqual([])
+    })
+
+    it('leaves a document alone when a spread may hide a pending label, and says so', async () => {
+      const p = project('pin-fields-spread', {
+        'docs/main/d.doc.ts': ['decision, section', `decision({ id: 'd', title: 'D', status: 'proposed', appliesFrom: 'next', ...{}, sections: [section('s', 'S', [])] })`],
+      })
+      const result = await pinDocs(readConfig(undefined, p.dir), '0.3.1')
+      expect(result.changed).toEqual([])
+      expect(result.skipped).toHaveLength(1)
+      expect(p.read('docs/main/d.doc.ts')).toContain("appliesFrom: 'next'")
+    })
+
+    it('writes nothing when a document cannot be parsed', async () => {
+      const p = project('pin-fields-broken', {
+        'docs/main/d.doc.ts': ['decision, section, text', DECISION],
+        'docs/main/z.doc.ts': ['section', 'decision({ ('],
+      })
+      const before = p.read('docs/main/d.doc.ts')
+      await expect(pinDocs(readConfig(undefined, p.dir), '0.3.1')).rejects.toThrow(/cannot parse/)
+      expect(p.read('docs/main/d.doc.ts')).toBe(before)
+    })
+
+    it('takes the fields from the table of types: a renamed field is the one that is pinned', async () => {
+      const p = project('pin-fields-table', {
+        'docs/main/d.doc.ts': ['decision, section', `decision({ id: 'd', title: 'D', status: 'proposed', appliesFrom: 'next', since: 'next', takesEffect: 'next', sections: [section('s', 'S', [])] })`],
+      })
+      const renamed = { ...DOC_TYPES, decision: { ...DOC_TYPES.decision, versionField: 'takesEffect' } }
+      const result = await pinDocs(readConfig(undefined, p.dir), '0.3.1', renamed)
+      // `since` goes to fact-kit and `takesEffect` to the table, but `appliesFrom` is no longer a version field
+      expect(result.changed).toEqual([{ file: 'docs/main/d.doc.ts', pinned: 2 }])
+      const after = p.read('docs/main/d.doc.ts')
+      expect(after).toContain("appliesFrom: 'next'")
+      expect(after).toContain("takesEffect: '0.3.1'")
+      expect(pinnableFields()).toEqual(['release', 'appliesFrom'])
+      expect(pinnableFields(renamed)).toEqual(['release', 'takesEffect'])
+    })
   })
 })
 
