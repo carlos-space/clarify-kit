@@ -239,6 +239,12 @@ describe('pin, render, read and impact', () => {
     assert.match(installed.thenChecks.join('\n'), /major 是 1/)
     assert.match(installed.thenChecks.join('\n'), /`docs`/)
   })
+  it('pin also pins the version fields of the document types', () => {
+    const pin = value('cli.pin')
+    assert.match(pin.does, /appliesFrom/)
+    assert.match(pin.does, /release/)
+    assert.match(pin.keeps, /已是版號/)
+  })
   it('pin leaves a pending row alone', () => {
     const keeps = value('cli.pin').keeps
     assert.match(keeps, /帶 `pending`.*不動/)
