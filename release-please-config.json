@@ -35,7 +35,7 @@
       "initial-version": "0.1.0",
       "versioning": "prerelease",
       "prerelease-type": "alpha.1",
-      "prerelease": false
+      "prerelease": true
     },
     "facts": {
       "component": "clarify-kit-facts",
@@ -44,9 +44,9 @@
       "initial-version": "0.1.0",
       "versioning": "prerelease",
       "prerelease-type": "alpha.1",
-      "prerelease": false
+      "prerelease": true
     }
   },
   "plugins": [],
-  "last-release-sha": "e6a07cddf3dbdcc5db0508e0bc84514f001ef5d3"
+  "last-release-sha": "9f2e5577c67a5b786e3132c8570d0a3e589a3531"
 }
