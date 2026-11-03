@@ -32,8 +32,6 @@ export type {
   Section,
 } from './docs.ts'
 export { DocModelError, InputError, RefusedError } from './errors.ts'
-export { AdoptError, adoptFile } from './adopt.ts'
-export type { AdoptResult } from './adopt.ts'
 export { FORMAT_VERSION, buildIndex, buildProject, readPackageName } from './build.ts'
 export type { BuildResult, DocsIndex } from './build.ts'
 export { checkProject, knownFactIds } from './check.ts'
@@ -41,7 +39,6 @@ export { CONFIG_FILE, CONFIG_KEYS, readConfig } from './config.ts'
 export type { Config } from './config.ts'
 export { defineDocs, entryOf } from './entry.ts'
 export type { DocsEntry, PublishInfo } from './entry.ts'
-export { bodyOf, contentHashOf } from './hash.ts'
 export { DOC_FILE, PROBLEM_CODES, loadModules, loadProject } from './load.ts'
 export type { LoadedDocument, LoadedEntry, Problem, ProblemCode, Project } from './load.ts'
 export { DOC_DATA_KEYS, pinDocs } from './pin.ts'
@@ -86,4 +83,4 @@ export function version(): string {
 
 
 
-export const usage = 'usage: clarify-kit build | check | pin --version <v> | render | adopt <file> | --version | --help'
+export const usage = 'usage: clarify-kit build | check | pin --version <v> | render | --version | --help'

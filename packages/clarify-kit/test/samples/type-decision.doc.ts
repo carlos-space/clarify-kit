@@ -6,6 +6,5 @@ export default decision({
   status: 'accepted',
   appliesFrom: 'next',
   supersedes: ['older-decision'],
-  contentHash: 'a'.repeat(64),
   sections: [section('context', 'Context', [text('Why.')])],
 })

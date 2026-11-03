@@ -90,14 +90,10 @@ export interface DecisionInput extends Common {
   appliesFrom: string
   /** Id, or ids, of the decisions this one replaces. */
   supersedes?: string | string[]
-  /** Written by `clarify-kit adopt`: the sha256 of the body, as 64 hex digits. */
-  contentHash?: string
 }
 export interface RecordInput extends Common {
   /** `YYYY-MM-DD`. */
   date: string
-  /** Written by `clarify-kit adopt`: the sha256 of the body, as 64 hex digits. */
-  contentHash?: string
 }
 
 interface Built {
@@ -118,9 +114,8 @@ export type DecisionDocument = Built & {
   status: DecisionStatus
   appliesFrom: string
   supersedes: string[]
-  contentHash?: string
 }
-export type RecordDocument = Built & { type: 'record'; date: string; contentHash?: string }
+export type RecordDocument = Built & { type: 'record'; date: string }
 export type Document = DocDocument | RequirementDocument | DecisionDocument | RecordDocument
 
 const DOCUMENT = Symbol.for('clarify-kit.document')
@@ -130,7 +125,6 @@ export const isDocument = (value: unknown): value is Document =>
   typeof value === 'object' && value !== null && (value as Record<symbol, unknown>)[DOCUMENT] === true
 
 const COMMON_KEYS = ['id', 'title', 'topics', 'sections', 'pending'] as const
-const HASH = /^[0-9a-f]{64}$/
 
 function built(input: Record<string, unknown>, type: DocType, template: string | undefined): Built {
   const id = slug(input.id, `${type} id`)
@@ -163,12 +157,6 @@ function finish<T extends Document>(document: T): T {
   return document
 }
 
-function hashOf(value: unknown, what: string): string {
-  const text = requireText(value, what)
-  if (!HASH.test(text)) throw new DocModelError(`${what} must be a sha256 written as 64 lowercase hex digits`)
-  return text
-}
-
 /** @internal `template` is set by the template functions. */
 export interface Options {
   template?: string
@@ -199,33 +187,29 @@ export function requirement(input: RequirementInput, options?: Options): Require
 
 export function decision(input: DecisionInput, options?: Options): DecisionDocument {
   const i = requireObject(input, 'decision')
-  onlyKeys(i, [...COMMON_KEYS, 'status', 'appliesFrom', 'supersedes', 'contentHash'], 'decision')
+  onlyKeys(i, [...COMMON_KEYS, 'status', 'appliesFrom', 'supersedes'], 'decision')
   const base = built(i, 'decision', options?.template)
   const list = i.supersedes === undefined ? [] : Array.isArray(i.supersedes) ? i.supersedes : [i.supersedes]
   const supersedes = [...new Set(list.map((s, n) => slug(s, `decision "${base.id}" supersedes[${n}]`)))]
   if (supersedes.includes(base.id)) throw new DocModelError(`decision "${base.id}" cannot supersede itself`)
-  const out: DecisionDocument = {
+  return finish({
     type: 'decision',
     ...base,
     status: requireOneOf(i.status, DOC_TYPES.decision.states, 'decision status'),
     appliesFrom: versionOf(i.appliesFrom, 'decision appliesFrom'),
     supersedes,
-  }
-  if (i.contentHash !== undefined) out.contentHash = hashOf(i.contentHash, 'decision contentHash')
-  return finish(out)
+  })
 }
 
 export function record(input: RecordInput, options?: Options): RecordDocument {
   const i = requireObject(input, 'record')
   if ('status' in i) throw new DocModelError('record has no status')
-  onlyKeys(i, [...COMMON_KEYS, 'date', 'contentHash'], 'record')
-  const out: RecordDocument = {
+  onlyKeys(i, [...COMMON_KEYS, 'date'], 'record')
+  return finish({
     type: 'record',
     ...built(i, 'record', options?.template),
     date: dateOf(i.date, 'record date'),
-  }
-  if (i.contentHash !== undefined) out.contentHash = hashOf(i.contentHash, 'record contentHash')
-  return finish(out)
+  })
 }
 
 export interface InputOf {

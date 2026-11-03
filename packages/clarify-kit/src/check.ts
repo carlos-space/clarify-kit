@@ -4,7 +4,6 @@
 import { loadInstalledIndex, selectFacts } from 'fact-kit'
 import type { Config } from './config.ts'
 import { DocModelError, InputError } from './errors.ts'
-import { contentHashOf } from './hash.ts'
 import { loadProject } from './load.ts'
 import type { LoadedDocument, LoadedEntry, Problem, ProblemCode } from './load.ts'
 import { missingSections } from './templates.ts'
@@ -65,17 +64,6 @@ function checkDocument(
   if (document.type === 'decision') {
     for (const id of document.supersedes) {
       if (!decisions.has(id)) add('supersedes-unknown', `${label} supersedes "${id}", which is not a decision of entry "${entry.name}"`, location)
-    }
-  }
-
-  if ((document.type === 'decision' || document.type === 'record') && document.contentHash !== undefined) {
-    const now = contentHashOf(document)
-    if (now !== document.contentHash) {
-      add(
-        'adopted-content-changed',
-        `${label} body changed after it was adopted (hash ${document.contentHash.slice(0, 12)} in the source, ${now.slice(0, 12)} now). If the change is on purpose, run "clarify-kit adopt" on the file`,
-        location,
-      )
     }
   }
 }

@@ -9,8 +9,11 @@ const exitCodes = { 0: '成功', 1: '找到問題或操作被拒絕', 2: '用法
 export default [
   f.value(
     'commands',
-    history({ since: '0.1.0-alpha.1', value: { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] } }),
-    { title: 'CLI 指令清單', description: '`clarify-kit` 提供 build、check、pin、render 與 adopt 五個指令。' },
+    history(
+      { since: '0.1.0-alpha.1', value: { binary: 'clarify-kit', commands: ['build', 'check', 'pin', 'render', 'adopt'] } },
+      { since: 'next', replace: { '/commands': ['build', 'check', 'pin', 'render'] } },
+    ),
+    { title: 'CLI 指令清單', description: '`clarify-kit` 的 CLI 指令清單。' },
   ),
   f.value(
     'build',
@@ -41,17 +44,24 @@ export default [
       flags: { '--config': '設定檔路徑' },
       exitCodes: { ...exitCodes, 1: '檔案不是 decision 或 record，或內文不合法' },
     } }),
-    { title: 'adopt 指令', description: '採納指令。把狀態改成已採納並寫入內文雜湊，重跑會更新雜湊。' },
+    {
+      title: 'adopt 指令',
+      description: '採納指令。把狀態改成已採納並寫入內文雜湊，重跑會更新雜湊。',
+      when: { deprecatedIn: 'next', removeIn: 'next' },
+    },
   ),
   f.value(
     'pin',
-    history({ since: '0.1.0-alpha.1', value: {
-      usage: 'clarify-kit pin --version <v> [--config <file>]',
-      does: '把 `docsDir` 底下 `*.doc.ts` 裡文件、段落與區塊的 `since: next` 換成版號 `<v>`，用法同 `fact-kit pin`',
-      flags: { '--version': '必填，要釘上的版號', '--config': '設定檔路徑' },
-      exitCodes: { ...exitCodes, 2: '沒給 `--version` 或版號不是 semver' },
-      keeps: '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。雜湊排除 `since` 與 `pending`，所以 pin 與拿掉標籤都不影響採納後內文的雜湊',
-    } }),
+    history(
+      { since: '0.1.0-alpha.1', value: {
+        usage: 'clarify-kit pin --version <v> [--config <file>]',
+        does: '把 `docsDir` 底下 `*.doc.ts` 裡文件、段落與區塊的 `since: next` 換成版號 `<v>`，用法同 `fact-kit pin`',
+        flags: { '--version': '必填，要釘上的版號', '--config': '設定檔路徑' },
+        exitCodes: { ...exitCodes, 2: '沒給 `--version` 或版號不是 semver' },
+        keeps: '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。雜湊排除 `since` 與 `pending`，所以 pin 與拿掉標籤都不影響採納後內文的雜湊',
+      } },
+      { since: 'next', set: { '/keeps': '帶 `pending` 的文件、段落與區塊不動，其餘的 `since` 也不動；功能落地時作者先拿掉 `pending`，下一次 pin 才會釘版號。' } },
+    ),
     { title: 'pin 指令', description: '發版時把 `next` 釘成版號，用法同 `fact-kit pin`。' },
   ),
   f.value(
