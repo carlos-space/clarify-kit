@@ -33,12 +33,12 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "fact-kit": "^0.12.1",
+    "fact-kit": "^0.13.0",
     "oxc-parser": "^0.155.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.4",
-    "fact-kit": "^0.12.1",
+    "fact-kit": "^0.13.0",
     "oxc-parser": "^0.155.0",
     "typescript": "7.1.0-beta",
     "vitest": "^4.1.11"

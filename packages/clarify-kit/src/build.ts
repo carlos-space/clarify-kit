@@ -1,22 +1,24 @@
-// Builds each entry into `dist/<entry>/index.json`, the file a docs package ships. The top-level fields are the six
+// Builds each entry into `dist/<entry>/index.json`, the file a docs package ships. The top-level fields are the seven
 // of `clarify-kit.index.fields`, in that order, and `formatVersion` is the one of `clarify-kit.index.format-version`.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { Config } from './config.ts'
 import type { Document } from './docs.ts'
-import type { PublishInfo } from './entry.ts'
+import type { Layer, PublishInfo } from './entry.ts'
 import { InputError } from './errors.ts'
 import { loadProject } from './load.ts'
 import type { LoadedEntry, Problem } from './load.ts'
 
 /** The version of the index format this package writes. A reader takes the same major. */
-export const FORMAT_VERSION = '1.0'
+export const FORMAT_VERSION = '1.1'
 
 /** The built `dist/<entry>/index.json`. */
 export interface DocsIndex {
   formatVersion: string
   package: string
   entry: string
+  /** Declared by the entry. Index format 1.1 and later; an index of format 1.0 has none. */
+  layer?: Layer
   describes: Record<string, string>
   publish: PublishInfo
   docs: Document[]
@@ -44,10 +46,12 @@ export function readPackageName(dir: string): string {
 /** The index of one entry that loaded. */
 export function buildIndex(packageName: string, entry: LoadedEntry): DocsIndex {
   if (entry.entry === undefined) throw new InputError(`entry "${entry.name}" has no describes and publish`)
+  if (entry.entry.layer === undefined) throw new InputError(`entry "${entry.name}" declares no layer`)
   return {
     formatVersion: FORMAT_VERSION,
     package: packageName,
     entry: entry.name,
+    layer: entry.entry.layer,
     describes: entry.entry.describes,
     publish: entry.entry.publish,
     docs: entry.documents.map((d) => d.document),
@@ -57,7 +61,7 @@ export function buildIndex(packageName: string, entry: LoadedEntry): DocsIndex {
 /** Writes the index of every entry. Nothing is written when a source fails to load. */
 export async function buildProject(config: Config): Promise<BuildResult> {
   const project = await loadProject(config)
-  const blocking = project.problems.filter((p) => p.code === 'load-error')
+  const blocking = project.problems.filter((p) => p.code === 'load-error' || p.code === 'undeclared-layer')
   if (blocking.length > 0) return { written: [], problems: project.problems, ok: false }
   const packageName = readPackageName(config.dir)
   const written: string[] = []

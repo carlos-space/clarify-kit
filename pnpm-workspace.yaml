@@ -3,6 +3,7 @@ packages:
   - "facts"
   - "facts/*"
   - "examples/sample-product/*"
+  - "docs"
 
 minimumReleaseAgeExclude:
   - "*-facts"

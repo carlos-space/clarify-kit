@@ -149,11 +149,11 @@ describe('build, check, CLI and index format against the facts', () => {
     expect(config).toMatchObject({ docsDir: '/nowhere/docs', modules: [], factSources: [] })
   })
 
-  it('writes the six top-level fields and the format version the index facts give', async () => {
+  it('writes the top-level fields and the format version the index facts give', async () => {
     const built = await builtSamples()
     expect(Object.keys(built)).toEqual(value('index.fields').topLevel)
     expect(built.formatVersion).toBe(FORMAT_VERSION)
-    expect(FORMAT_VERSION).toBe(value('index.format-version').initial)
+    expect(FORMAT_VERSION).toBe(value('index.format-version').current)
     expect('dataFormatVersion' in built).toBe(false)
   })
 

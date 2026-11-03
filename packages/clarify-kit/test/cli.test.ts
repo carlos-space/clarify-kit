@@ -19,7 +19,7 @@ describe('clarify-kit build', () => {
     const p = project('cli-build')
     const r = cli(p, 'build')
     expect(r).toMatchObject({ status: 0, out: 'wrote dist/main/index.json\n' })
-    expect(p.json('dist/main/index.json').formatVersion).toBe('1.0')
+    expect(p.json('dist/main/index.json').formatVersion).toBe('1.1')
   })
   it('exits 1 and writes nothing when a source does not load', () => {
     const p = project('cli-build-fail').write('docs/main/broken.doc.ts', 'throw new Error("boom")\n')

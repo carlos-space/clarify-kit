@@ -168,3 +168,24 @@ jobs:
           for pkg in examples/sample-product/sample-product-facts examples/sample-product/sample-product-docs; do
             (cd "$pkg" && npm pack --dry-run)
           done
+
+  # The documents of clarify-kit itself (docs/) against the facts they cite. The facts are built first, because
+  # clarify-kit-facts reads dist/ of the facts package.
+  docs:
+    needs: scope
+    if: needs.scope.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Build (the facts first)
+        run: pnpm build
+      - name: clarify-kit build
+        working-directory: docs
+        run: pnpm exec clarify-kit build
+      - name: clarify-kit check
+        working-directory: docs
+        run: pnpm exec clarify-kit check

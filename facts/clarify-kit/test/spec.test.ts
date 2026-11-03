@@ -128,10 +128,11 @@ describe('CLI, config, entry rule, index format and check codes', () => {
     assert.match(rule.outside, /outside-entry/)
     assert.equal(value('cli.config').file, 'clarify-kit.config.json')
   })
-  it('write six top-level fields and no data version field', () => {
+  it('write seven top-level fields, among them layer, and no data version field', () => {
     const fields = value('index.fields')
-    assert.deepEqual(fields.topLevel, ['formatVersion', 'package', 'entry', 'describes', 'publish', 'docs'])
-    assert.deepEqual(Object.keys(fields.meaning), fields.topLevel)
+    assert.deepEqual(fields.topLevel, ['formatVersion', 'package', 'entry', 'layer', 'describes', 'publish', 'docs'])
+    assert.match(fields.meaning.package, /<RepoName>-docs/)
+    assert.deepEqual(Object.keys(fields.meaning).sort(), [...fields.topLevel].sort())
     assert.equal(fields.noOtherFields, true)
     for (const name of ['dataFormatVersion', 'indexFormat', 'schemaVersion']) assert.ok(!fields.topLevel.includes(name))
   })
@@ -140,19 +141,22 @@ describe('CLI, config, entry rule, index format and check codes', () => {
     assert.equal(version.initial, '1.0')
     assert.match(version.initial, /^\d+\.\d+$/)
     assert.match(version.reader, /同一個 major/)
+    assert.match(version.reader, /1\.0 與 1\.1/)
+    assert.equal(version.current, '1.1')
     assert.equal(version.dataVersionField, null)
   })
   it('list the fields of a document, among them id, factRefs and template', () => {
     const fields = value('index.doc-fields')
-    for (const name of ['id', 'factRefs']) assert.ok(fields.required.includes(name), name)
+    for (const name of ['id', 'factRefs', 'docRefs']) assert.ok(fields.required.includes(name), name)
     assert.ok(fields.optional.includes('template'))
-    assert.deepEqual(Object.keys(fields.meaning), [...fields.required, ...fields.optional])
+    assert.deepEqual(Object.keys(fields.meaning).sort(), [...fields.required, ...fields.optional].sort())
+    assert.match(fields.meaning.docRefs, /<target>#<id>/)
     assert.deepEqual(Object.keys(fields.byType), ['doc', 'requirement', 'decision', 'record'])
     assert.equal(fields.noOtherFields, true)
   })
   it('state the docs package convention', () => {
     const convention = value('index.docs-package-convention')
-    assert.equal(convention.name, '`<product>-docs`')
+    assert.equal(convention.name, '`<RepoName>-docs`，私有倉加 `@<OrgName>/`，例如 `@carlos-space/blueprint-poly-hub-docs`')
     assert.deepEqual(convention.exports, { './<entry>/index.json': './dist/<entry>/index.json' })
     assert.deepEqual(convention.files, ['dist'])
     assert.equal(convention.private, 'unset')
@@ -170,6 +174,10 @@ describe('CLI, config, entry rule, index format and check codes', () => {
     }
     assert.ok(!codes.includes('adopted-content-changed'))
     assert.ok(!('adopted-content-changed' in value('check.codes').scope))
+    for (const code of ['cites-lower-layer', 'undeclared-layer', 'unknown-doc-reference', 'layer-mismatch']) {
+      assert.ok(codes.includes(code), code)
+      assert.ok(code in value('check.codes').scope, code)
+    }
     assert.ok(codes.length >= 6)
     assert.deepEqual(codes.slice(0, 5), [
       'missing-required-section',
@@ -178,6 +186,32 @@ describe('CLI, config, entry rule, index format and check codes', () => {
       'scenario-without-fact',
       'outside-entry',
     ])
+  })
+  it('declare the layer of an entry, with four values and a direction', () => {
+    const layer = value('cli.layer')
+    assert.deepEqual(layer.values, ['org', 'product', 'implementation', 'tool'])
+    assert.match(layer.order, /org > product > implementation/)
+    assert.match(layer.citeRule, /cites-lower-layer/)
+    assert.match(layer.tool, /每一層都可以引用/)
+    assert.match(layer.crossProduct, /不另比較產品/)
+    assert.match(value('cli.entry-rule').layer, /undeclared-layer/)
+    assert.match(value('cli.entry-rule').entryFile, /`layer`/)
+  })
+  it('find the layer of a source in its index first, then in the config', () => {
+    const source = value('cli.source-layer')
+    assert.match(source.first, /index 的頂層 `layer`/)
+    assert.match(source.configFallback, /"layer"/)
+    assert.match(source.mismatch, /layer-mismatch/)
+    assert.match(source.undeclared, /undeclared-layer/)
+    const settings = value('cli.config').settings
+    assert.match(settings.factSources, /"layer"/)
+    assert.match(settings.docSources, /-docs/)
+  })
+  it('cite a document with doc:<target>#<id>', () => {
+    const ref = value('cli.doc-reference')
+    assert.match(ref.syntax, /doc:<target>#<id>/)
+    assert.match(ref.target, /docSources/)
+    assert.match(ref.unknown, /unknown-doc-reference/)
   })
   it('read facts through fact-kit', () => {
     assert.match(value('check.fact-lookup').rule, /loadInstalledIndex.*selectFacts/)

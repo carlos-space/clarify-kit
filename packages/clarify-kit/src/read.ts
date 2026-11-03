@@ -8,7 +8,8 @@ import { BLOCK_KINDS } from './blocks.ts'
 import { DOC_TYPE_NAMES } from './docs.ts'
 import type { Document } from './docs.ts'
 import type { DocsIndex } from './build.ts'
-import type { PublishInfo } from './entry.ts'
+import { isLayer } from './entry.ts'
+import type { Layer, PublishInfo } from './entry.ts'
 
 /** The codes of {@link DocReadError}, as `clarify-kit.read.installed` lists them. */
 export const DOC_READ_ERROR_CODES = ['unsupported-format-version', 'not-a-docs-index'] as const
@@ -41,6 +42,8 @@ export interface DocReader {
   /** Version of the installed docs package. */
   version: string
   entry: string
+  /** The layer the index declares. Undefined for an index of format 1.0, which has none. */
+  layer: Layer | undefined
   describes: Readonly<Record<string, string>>
   publish: Readonly<PublishInfo>
   /** The documents this reader sees, with the sections and blocks it does not see taken out. */
@@ -63,6 +66,9 @@ export function assertDocsIndex(data: unknown, label = 'the index'): DocsIndex {
       'unsupported-format-version',
       `${label} has formatVersion ${JSON.stringify(format)}, and this reader takes 1.x`,
     )
+  }
+  if (data.layer !== undefined && !isLayer(data.layer)) {
+    throw new DocReadError('not-a-docs-index', `${label} has the layer ${JSON.stringify(data.layer)}, which is not a layer`)
   }
   if (!Array.isArray(data.docs)) throw new DocReadError('not-a-docs-index', `${label} has no "docs" array`)
   data.docs.forEach((d: unknown, i) => {
@@ -132,14 +138,15 @@ export function selectDocs(docs: readonly Document[], options: SelectOptions = {
     const sections = doc.sections
       .filter((s) => visible(s, options, `${label} section ${s.id}`))
       .map((s) => ({ ...s, blocks: s.blocks.filter((b, i) => visible(b, options, `${label} section ${s.id} blocks[${i}]`)) }))
-    out.push({ ...doc, sections } as Document)
+    // An index of format 1.0 has no `docRefs`: its documents cite no documents.
+    out.push({ ...doc, docRefs: doc.docRefs ?? [], sections } as Document)
   }
   return out
 }
 
 /**
  * Reads the built `index.json` of `<package>` or `<package>/<entry>` as installed under `root`, checks it to be a docs
- * index of format 1.x, and chooses what the reader sees by `version` and `include`. Throws `FactReadError` of
+ * index of format 1.0 or 1.1, and chooses what the reader sees by `version` and `include`. Throws `FactReadError` of
  * fact-kit when the package is not found or is not JSON, and {@link DocReadError} when it is not a docs index.
  */
 export function readDocs(spec: string, options: ReadDocsOptions = {}): DocReader {
@@ -151,6 +158,7 @@ export function readDocs(spec: string, options: ReadDocsOptions = {}): DocReader
     package: installed.packageName,
     version: installed.packageVersion,
     entry: installed.entry,
+    layer: index.layer,
     describes: index.describes,
     publish: index.publish,
     docs,
