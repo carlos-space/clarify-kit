@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2-alpha.1](https://github.com/promptex-ai/clarify-kit/compare/clarify-kit/v0.3.1...clarify-kit/v0.3.2-alpha.1) (2026-11-13)
+
+
+### Fixed
+
+* 倉庫位置改到 promptex-ai，著作權人改成 Promptex-AI ([#34](https://github.com/promptex-ai/clarify-kit/issues/34)) ([b1523d1](https://github.com/promptex-ai/clarify-kit/commit/b1523d1b4abe6c2951a188d237e651f7e4314250))
+
 ## [0.3.1](https://github.com/carlos-space/clarify-kit/compare/clarify-kit/v0.3.1-alpha.1...clarify-kit/v0.3.1) (2026-11-03)
 
 
