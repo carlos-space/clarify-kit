@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.2](https://github.com/promptex-ai/clarify-kit/compare/clarify-kit-facts/v0.3.2-alpha.1...clarify-kit-facts/v0.3.2) (2026-11-13)
+
+
+### chore
+
+* **release/v0.3:** clarify-kit-facts 0.3.2 ([f32a439](https://github.com/promptex-ai/clarify-kit/commit/f32a4399849096251f14355041e430964d54e529))
+
+## [0.3.2-alpha.1](https://github.com/promptex-ai/clarify-kit/compare/clarify-kit-facts/v0.3.1...clarify-kit-facts/v0.3.2-alpha.1) (2026-11-13)
+
+
+### Fixed
+
+* **facts:** describesOf 帶單元目錄，跟上 blueprint 範本 v0.11.0 ([#33](https://github.com/promptex-ai/clarify-kit/issues/33)) ([1e063d4](https://github.com/promptex-ai/clarify-kit/commit/1e063d49f74727a063fcde6909976ac6eef9e98b))
+* 倉庫位置改到 promptex-ai，著作權人改成 Promptex-AI ([#34](https://github.com/promptex-ai/clarify-kit/issues/34)) ([b1523d1](https://github.com/promptex-ai/clarify-kit/commit/b1523d1b4abe6c2951a188d237e651f7e4314250))
+
 ## [0.3.1](https://github.com/carlos-space/clarify-kit/compare/clarify-kit-facts/v0.3.1-alpha.1...clarify-kit-facts/v0.3.1) (2026-11-03)
 
 
